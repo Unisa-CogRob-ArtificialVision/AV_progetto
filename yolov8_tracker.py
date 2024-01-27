@@ -19,7 +19,9 @@ class Tracker():
                 id = box.id[i]
                 # get box coordinates in (left, top, right, bottom) format
                 # convert the box type to something "digestible", not floats 
-                b = box.xyxy[i].numpy().astype(numpy.int32)  
+                b = box.xyxy[i].numpy().astype(numpy.int32)
+                x1, y1, x2, y2 = b[0], b[1], b[2], b[3]
+
                 sublist.append(b)
                 sublist.append(id)
                 bbox.append(sublist)
