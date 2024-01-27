@@ -4,7 +4,7 @@ from ultralytics import YOLO
 class Tracker():
 
     def __init__(self, **kwargs):
-        self.model = YOLO('yolov8n.pt')
+        self.model = YOLO('yolov8l.pt')
 
     def update(self, image):
         bbox = []
@@ -13,10 +13,15 @@ class Tracker():
         results = self.model.track(source=image, persist=True, tracker="botsort.yaml",classes=0)
         try:
         # for r in results:
+            # for d in reversed(results[0].boxes):
+            #     print(d)
+            #     c, conf, id = int(d.cls), float(d.conf) if conf else None, None if d.id is None else int(d.id.item())
+            #     print('cls',id)
             boxes = results[0].boxes.xyxy
+            ids = results[0].boxes.id.int().cpu().tolist()
             for i,box in enumerate(boxes):
                 sublist = [] 
-                id = results[0].boxes.id[i]
+                id = ids[i]
                 #print(box)
                 # get box coordinates in (left, top, right, bottom) format
                 # convert the box type to something "digestible", not floats 

@@ -12,28 +12,39 @@ from torchvision.models import resnet18, mobilenet_v2, squeezenet1_0, shufflenet
 
 # Define a simple CNN model
 class SimpleModel(nn.Module):
-    def __init__(self, num_classes, model='vgg11'):
+    def __init__(self,num_classes,model='resnet'):
         super(SimpleModel, self).__init__()
+
+        models = {'resnet': resnet18(pretrained=True), 
+                  'shufflenet': shufflenet_v2_x1_0(pretrained=True), 
+                  'squeezenet': squeezenet1_0(pretrained=True), 
+                  'mobilenet': mobilenet_v2(pretrained=True),
+                  'alexnet': alexnet(pretrained=True),
+                  'vgg11': vgg11(pretrained=True)
+                  }
+        if model not in models.keys():
+            model = 'resnet'
         
-        models = {
-            'vgg11': vgg11(weights=VGG11_Weights.DEFAULT)
-        }
-        
-        if model not in models:
-            model = 'vgg11'
-        
-        print('LOADING MODEL:', model)
+        print('LOADING MODEL: ', model)
         self.backbone = models[model]
-        
-        if model == 'vgg11':
+        #print(self.backbone)
+        for param in self.backbone.parameters():
+            param.requires_grad = False
+        if model == 'alexnet' or model == 'vgg11':
             self.backbone.classifier[6] = nn.Linear(4096, num_classes)
             self.backbone.classifier[6].requires_grad = True
+            # self.backbone.classifier[4].requires_grad = True
+            # self.backbone.classifier[2].requires_grad = True
+            # self.backbone.classifier[1] = nn.Conv2d(512, num_classes, kernel_size=(1, 1), stride=(1, 1))
+            # self.backbone.classifier[1].requires_grad = True
         else:
-            raise ValueError("Model not supported")
+            self.backbone.fc = nn.Linear(self.backbone.fc.in_features, num_classes)
+            self.backbone.fc.requires_grad = True
+
 
     def forward(self, x):
-        x = self.backbone(x)
-        return x
+        x2 = self.backbone(x)
+        return x2
 
     
     
