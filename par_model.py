@@ -3,17 +3,22 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
+from torchvision.models import resnet18
+from sklearn.model_selection import train_test_split
+from torchvision.datasets import ImageFolder
 from par_train import SimpleModel, CustomDataset
 from matplotlib import pyplot as plt
+import os
 import sys
 import time
 
+from PIL import Image
 from tqdm import tqdm
 
 
 
 class PARModel():
-    def __init__(self, models_path, device, backbone='resnet'):
+    def __init__(self, models_path, device, backbone='shufflenet'):
 
         self.device = device
         # model = resnet18(pretrained=True)
@@ -22,19 +27,29 @@ class PARModel():
         model_uc = SimpleModel(11,backbone)
         checkpoint = torch.load(models_path['uc_model'])
         model_uc.load_state_dict(checkpoint['model_state_dict'])
+        # self.uc_head = model_uc.backbone.fc
+        model_uc.requires_grad = False
         model_lc = SimpleModel(11,backbone)
         checkpoint = torch.load(models_path['lc_model'])
         model_lc.load_state_dict(checkpoint['model_state_dict'])
+        # self.lc_head = model_lc.backbone.fc
+        model_lc.requires_grad = False
         model_g = SimpleModel(2,backbone)
         checkpoint = torch.load(models_path['g_model'])
         model_g.load_state_dict(checkpoint['model_state_dict'])
+        # self.g_head = model_g.backbone.fc
+        model_g.requires_grad = False
         model_b = SimpleModel(2,backbone)
         checkpoint = torch.load(models_path['b_model'])
         model_b.load_state_dict(checkpoint['model_state_dict'])
+        # self.b_head = model_b.backbone.fc
+        model_b.requires_grad = False
         model_h = SimpleModel(2,backbone)
         checkpoint = torch.load(models_path['h_model'])
         model_h.load_state_dict(checkpoint['model_state_dict'])
-        
+        # self.h_head = model_h.backbone.fc
+        model_h.requires_grad = False
+
         self.model_uc = model_uc; self.model_uc.to(device); self.model_uc.eval()
         self.model_lc = model_lc; self.model_lc.to(device); self.model_lc.eval()
         self.model_g = model_g; self.model_g.to(device); self.model_g.eval()
@@ -68,11 +83,11 @@ class PARModel():
         return [out_uc,out_lc,out_g,out_b,out_h]
 
 if __name__ == '__main__':
-    models_path = {'uc_model':'models/best_model_uc_shuffle.pth',
-                'lc_model':'models/best_model_lc_shuffle.pth',
-                'g_model':'models/best_model_g_shuffle.pth',
-                'b_model':'models/best_model_b_shuffle.pth',
-                'h_model':'models/best_model_h_shuffle.pth'}
+    models_path = {'uc_model':'models/best_model_uc_vgg11.pth',
+                'lc_model':'models/best_model_lc_vgg11.pth',
+                'g_model':'models/best_model_gender_vgg11.pth',
+                'b_model':'models/best_model_bag_vgg11.pth',
+                'h_model':'models/best_model_hat_vgg11.pth'}
 
     color_labels = ['black', 'blue', 'brown', 'gray', 'green', 'orange', 'pink', 'purple', 'red', 'white','yellow']
     gender_labels = ['male','female']

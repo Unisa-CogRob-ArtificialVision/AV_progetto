@@ -6,8 +6,8 @@ import json
 from time import time
 import math
 
-from tracker import Tracker
-from YOLOX.yolox.data.datasets import COCO_CLASSES as class_names
+from yolov8_tracker import Tracker
+#from YOLOX.yolox.data.datasets import COCO_CLASSES as class_names
 
 import torch
 from torchvision import transforms as T
@@ -91,7 +91,7 @@ else:
     device = 'cpu'
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--video",default="C://Users//rosar//Desktop//test_video.mp4", type=str)
+parser.add_argument("--video",default="C://Users//gaeta//Desktop//ProgettoAV//AV_progetto//test1.mp4", type=str)
 parser.add_argument("--configuration",default="config.txt", type=str)
 parser.add_argument("--results",default="results.txt", type=str)
 args, _ = parser.parse_known_args()
@@ -111,14 +111,14 @@ for r in roi.keys():
     roi[r]['height'] *= processing_height
 #print('ROI:',"\n",roi)
 ###################################################################################################### load tracker/detector
-tracker = Tracker( model='yolox-s',ckpt='./yolox_s.pth',filter_class=['person'],gpu=GPU)    # instantiate Tracker
+tracker = Tracker(model='yolox-s',ckpt='./yolox_s.pth',filter_class=['person'],gpu=GPU)    # instantiate Tracker
 
 ###################################################################################################### load par model
-models_path = {'uc_model':'models/best_model_uc_alexnet.pth',
-                'lc_model':'models/best_model_lc_alexnet.pth',
-                'g_model':'models/best_model_g_alexnet.pth',
-                'b_model':'models/best_model_b_alexnet.pth',
-                'h_model':'models/best_model_h_alexnet.pth'}
+models_path = {'uc_model':'models/best_model_uc_vgg11.pth',
+                'lc_model':'models/best_model_lc_vgg11.pth',
+                'g_model':'models/best_model_gender_vgg11.pth',
+                'b_model':'models/best_model_bag_vgg11.pth',
+                'h_model':'models/best_model_hat_vgg11.pth'}
     
 color_labels = ['black', 'blue', 'brown', 'gray', 'green', 'orange', 'pink', 'purple', 'red', 'white','yellow']
 gender_labels = ['male','female']
@@ -128,7 +128,7 @@ task_label_pairs = {'upper_color': color_labels,
          'gender': gender_labels,
          'bag': binary_labels,
          'hat': binary_labels}
-par_model = PARModel(models_path, device, backbone='alexnet')
+par_model = PARModel(models_path, device, backbone='vgg11')
 par_transforms = T.Compose([
         T.Resize((90,220)),
         T.ToTensor(),
