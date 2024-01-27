@@ -114,11 +114,11 @@ for r in roi.keys():
 tracker = Tracker(model='yolox-s',ckpt='./yolox_s.pth',filter_class=['person'],gpu=GPU)    # instantiate Tracker
 
 ###################################################################################################### load par model
-models_path = {'uc_model':'models/best_model_uc_alexnet.pth',
-                'lc_model':'models/best_model_lc_alexnet.pth',
-                'g_model':'models/best_model_g_alexnet.pth',
-                'b_model':'models/best_model_b_alexnet.pth',
-                'h_model':'models/best_model_h_alexnet.pth'}
+models_path = {'uc_model':'models/best_model_uc_vgg11.pth',
+                'lc_model':'models/best_model_lc_vgg11.pth',
+                'g_model':'models/best_model_gender_vgg11.pth',
+                'b_model':'models/best_model_bag_vgg11.pth',
+                'h_model':'models/best_model_hat_vgg11.pth'}
     
 color_labels = ['black', 'blue', 'brown', 'gray', 'green', 'orange', 'pink', 'purple', 'red', 'white','yellow']
 gender_labels = ['male','female']
@@ -128,7 +128,7 @@ task_label_pairs = {'upper_color': color_labels,
          'gender': gender_labels,
          'bag': binary_labels,
          'hat': binary_labels}
-par_model = PARModel(models_path, device, backbone='alexnet')
+par_model = PARModel(models_path, device, backbone='vgg11')
 par_transforms = T.Compose([
         T.Resize((90,220)),
         T.ToTensor(),
