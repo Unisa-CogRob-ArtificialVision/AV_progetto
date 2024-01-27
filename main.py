@@ -6,7 +6,7 @@ import json
 from time import time
 import math
 
-from tracker import Tracker
+from yolov8_tracker import Tracker
 from YOLOX.yolox.data.datasets import COCO_CLASSES as class_names
 
 import torch
@@ -112,7 +112,6 @@ for r in roi.keys():
 #print('ROI:',"\n",roi)
 ###################################################################################################### load tracker/detector
 tracker = Tracker( model='yolox-s',ckpt='./yolox_s.pth',filter_class=['person'],gpu=GPU)    # instantiate Tracker
-
 ###################################################################################################### load par model
 models_path = {'uc_model':'models/best_model_uc_vgg11.pth',
                 'lc_model':'models/best_model_lc_vgg11.pth',
