@@ -91,7 +91,7 @@ else:
     device = 'cpu'
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--video",default="C://Users//rosar//Desktop//test_video.mp4", type=str)
+parser.add_argument("--video",default="C://Users//rosar//Desktop//test.mp4", type=str)
 parser.add_argument("--configuration",default="config.txt", type=str)
 parser.add_argument("--results",default="results.txt", type=str)
 args, _ = parser.parse_known_args()
