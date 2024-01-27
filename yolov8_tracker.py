@@ -14,11 +14,15 @@ class Tracker():
 
         for r in results:
             boxes = r.boxes
-            for box in boxes: 
+            for i,box in enumerate(boxes):
+                sublist = [] 
+                id = box.id[i]
                 # get box coordinates in (left, top, right, bottom) format
                 # convert the box type to something "digestible", not floats 
-                b = box.xyxy[0].numpy().astype(numpy.int32)  
-                bbox.append(b)
+                b = box.xyxy[i].numpy().astype(numpy.int32)  
+                sublist.append(b)
+                sublist.append(id)
+                bbox.append(sublist)
 
         return image,bbox
 
