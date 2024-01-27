@@ -7,7 +7,7 @@ from time import time
 import math
 
 from yolov8_tracker import Tracker
-from YOLOX.yolox.data.datasets import COCO_CLASSES as class_names
+#from YOLOX.yolox.data.datasets import COCO_CLASSES as class_names
 
 import torch
 from torchvision import transforms as T
@@ -111,7 +111,8 @@ for r in roi.keys():
     roi[r]['height'] *= processing_height
 #print('ROI:',"\n",roi)
 ###################################################################################################### load tracker/detector
-tracker = Tracker( model='yolox-s',ckpt='./yolox_s.pth',filter_class=['person'],gpu=GPU)    # instantiate Tracker
+tracker = Tracker(model='yolox-s',ckpt='./yolox_s.pth',filter_class=['person'],gpu=GPU)    # instantiate Tracker
+
 ###################################################################################################### load par model
 models_path = {'uc_model':'models/best_model_uc_vgg11.pth',
                 'lc_model':'models/best_model_lc_vgg11.pth',
