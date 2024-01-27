@@ -4,7 +4,7 @@ from ultralytics import YOLO
 class Tracker():
 
     def __init__(self, **kwargs):
-        self.model = YOLO('yolov8l.pt')
+        self.model = YOLO('DETECTOR_models/yolov8s.pt')
 
     def update(self, image):
         bbox = []
@@ -12,24 +12,14 @@ class Tracker():
         # detect and track only the people (class 0 in COCO dataset)
         results = self.model.track(source=image, persist=True, tracker="botsort.yaml",classes=0)
         try:
-        # for r in results:
-            # for d in reversed(results[0].boxes):
-            #     print(d)
-            #     c, conf, id = int(d.cls), float(d.conf) if conf else None, None if d.id is None else int(d.id.item())
-            #     print('cls',id)
             boxes = results[0].boxes.xyxy
             ids = results[0].boxes.id.int().cpu().tolist()
             for i,box in enumerate(boxes):
                 sublist = [] 
                 id = ids[i]
-                #print(box)
-                # get box coordinates in (left, top, right, bottom) format
-                # convert the box type to something "digestible", not floats 
                 x1, y1, x2, y2 = int(box[0].item()), int(box[1].item()), int(box[2].item()), int(box[3].item())  
                 bbox.append([x1,y1,x2,y2,id])
-                #sublist.append(id)
-                #bbox.append(sublist)
-                #print(bbox)
+
         except Exception:
             bbox = []
         return image,bbox

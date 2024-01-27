@@ -6,8 +6,8 @@ import json
 from time import time
 import math
 
-from yolov8_tracker import Tracker
-#from YOLOX.yolox.data.datasets import COCO_CLASSES as class_names
+from tracker import Tracker
+from YOLOX.yolox.data.datasets import COCO_CLASSES as class_names
 
 import torch
 from torchvision import transforms as T
@@ -17,6 +17,7 @@ from par_model import PARModel
 
 ###################################################################################################### utility functions
 def insert_roi_sensors(img, roi):
+    """Inserisce nell'immagine un rettangolo che rappresenta la roi"""
     for r in roi.keys():
         x = roi[r]['x']
         y = roi[r]['y']
@@ -28,14 +29,16 @@ def insert_roi_sensors(img, roi):
         cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 0))
     return img
 
-##### convenzione bb -> [x, y, w, h]    (x,y) coordinate angolo superiore sinistro, (w,h) larghezza e altezza
+##### convenzione bb -> [x1, y1, x2, y2]    (x1,y1) coordinate angolo superiore sinistro, (x2,y2) coordinate angolo inferiore destro
 def get_bb_center(bb):
+    """Restituisce il centro del bounding box"""
     center_x = (bb[0] + bb[2])/2
     center_y = (bb[1] + bb[3])/2
     return center_x, center_y
 
-##### convenzione bb -> [x, y, w, h]    (x,y) coordinate angolo superiore sinistro, (w,h) larghezza e altezza
+##### convenzione bb -> [x1, y1, x2, y2]    (x1,y1) coordinate angolo superiore sinistro, (x2,y2) coordinate angolo inferiore destro
 def bb_in_roi(bb, roi):
+    """Controlla se il bounding box è nella roi"""
     for r in roi.keys():    # per ogni roi
         x = roi[r]['x']                   
         y = roi[r]['y']
@@ -54,12 +57,14 @@ def bb_in_roi(bb, roi):
 
 
 def read_config(config_path):
+    """Legge il file di configurazione (delle roi)"""
     with open(config_path,'r+') as f:
         data = json.load(f)
         return data
 
 
 def draw_bbox(img, bb, par_data, id):
+    """Disegna il bounding box nell'immagine ed inserisce le informazioni di tracking (id) e i dati di PAR"""
     x1, y1 = bb[0], bb[1]
     x2, y2 = bb[2], bb[3]
     cv2.rectangle(img,(x1, y1), (x2, y2), (0, 255, 0))
@@ -71,6 +76,7 @@ def draw_bbox(img, bb, par_data, id):
     return img
 
 def parse_par_pred(preds, color_labels, gender_labels, binary_labels):
+    """Prende in input i tensori di predizione del modello PAR (gli output della .predict()) e restituisce la label associata alla predizione"""
     pred_uc, pred_lc, pred_g, pred_b, pred_h = preds[0], preds[1], preds[2], preds[3], preds[4]
     uc_label = color_labels[pred_uc.argmax(dim=1).item()]
     lc_label = color_labels[pred_lc.argmax(dim=1).item()]
@@ -102,8 +108,8 @@ video_path = args.video
 roi = read_config(args.configuration)
 results_path = args.results
 
-processing_height = 600
-processing_width = 800
+processing_height = 720
+processing_width = 1020
 for r in roi.keys():
     roi[r]['x'] *= processing_width
     roi[r]['y'] *= processing_height
@@ -111,14 +117,14 @@ for r in roi.keys():
     roi[r]['height'] *= processing_height
 #print('ROI:',"\n",roi)
 ###################################################################################################### load tracker/detector
-tracker = Tracker(model='yolox-s',ckpt='./yolox_s.pth',filter_class=['person'],gpu=GPU)    # instantiate Tracker
+tracker = Tracker(model='yolox-s',ckpt='DETECTOR_models/yolox_s.pth',filter_class=['person'],gpu=GPU)    # instantiate Tracker
 
 ###################################################################################################### load par model
-models_path = {'uc_model':'models/best_model_uc_alexnet.pth',
-                'lc_model':'models/best_model_lc_alexnet.pth',
-                'g_model':'models/best_model_g_alexnet.pth',
-                'b_model':'models/best_model_b_alexnet.pth',
-                'h_model':'models/best_model_h_alexnet.pth'}
+models_path = {'uc_model':'PAR_models/best_model_uc_alexnet.pth',
+                'lc_model':'PAR_models/best_model_lc_alexnet.pth',
+                'g_model':'PAR_models/best_model_g_alexnet.pth',
+                'b_model':'PAR_models/best_model_b_alexnet.pth',
+                'h_model':'PAR_models/best_model_h_alexnet.pth'}
     
 color_labels = ['black', 'blue', 'brown', 'gray', 'green', 'orange', 'pink', 'purple', 'red', 'white','yellow']
 gender_labels = ['male','female']
@@ -167,35 +173,13 @@ while img is not None:
         
         s = time()
         for i,bb in enumerate(bbox):
-            #print('person detected')
+
             
             id = int(bb[-1])
             x1, y1, x2, y2 = bb[:-1]
 
-            
-            #print(i,"presence:",bb_in_roi(bb,roi))
             occupied_roi = bb_in_roi(bb,roi)
-            if occupied_roi is not None or True:
-                #print('person in roi',occupied_roi)
-                # x1, y1 = bb[0], bb[1]
-                # x2, y2 = x1 + bb[2], y1 + bb[3]
-
-                # x1, y1 = bb[0], bb[1]
-                # x2, y2 = bb[2], bb[3]
-
-                
-                ######### test values
-                # id = i
-                
-                # pred_uc, pred_lc, pred_g, pred_b, pred_h = [],[],[],[],[] 
-                # if frame > 0:
-                #     par_data = {'upper_color':'blue', 'lower_color':'black', 'gender':'male', 'bag':'no', 'hat': 'no'}
-                # if frame > 10:
-                #     par_data = {'upper_color':'orange', 'lower_color':'yellow', 'gender':'female', 'bag':'yes', 'hat': 'yes'}
-                # if frame > 30:
-                #     par_data = {'upper_color':'green', 'lower_color':'red', 'gender':'male', 'bag':'no', 'hat': 'no'}
-                ##########
-                    
+            if occupied_roi is not None or True:       
 
                 patch = par_transforms(Image.fromarray(final_img[y1:y2,x1:x2].copy())).unsqueeze(0).to(device)
                 pred_uc, pred_lc, pred_g, pred_b, pred_h = par_model.predict(patch)
@@ -253,9 +237,6 @@ while img is not None:
                 ## save changes for the next iteration
                 updated_id.append(id)
                 tracking_id[id] = person
-                # print('TYPES')
-                # for k in person:
-                #     print(k, person[k], type(person[k]))
 
                 ## update results json
                 if additional_info[id]['index'] == None:
@@ -270,9 +251,7 @@ while img is not None:
         final_img = insert_roi_sensors(final_img, roi) 
         e = time() - s
         print('PAR time:',e)    
-            #print("\nUPDATED ID",updated_id)
         for id in additional_info.keys():
-            #print(id, updated_id)
             if id not in updated_id:
                 additional_info[id]['current_roi'] = None
 
@@ -282,5 +261,3 @@ while img is not None:
         cv2.imshow('test_roi',final_img)
         cv2.waitKey(1)
     _, img = cap.read()
-    # e = time() - ss
-    # print('other time',e)

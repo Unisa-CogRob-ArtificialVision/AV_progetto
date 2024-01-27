@@ -9,7 +9,5 @@ data
 result.json
 test2.py
 zzz.py
-checkpoints
-models
 *.pth
 *.pt
