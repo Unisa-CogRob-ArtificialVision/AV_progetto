@@ -6,8 +6,8 @@ import json
 from time import time
 import math
 
-from tracker import Tracker
-from YOLOX.yolox.data.datasets import COCO_CLASSES as class_names
+from yolov8_tracker import Tracker
+#from YOLOX.yolox.data.datasets import COCO_CLASSES as class_names
 
 import torch
 from torchvision import transforms as T
@@ -90,7 +90,7 @@ def parse_par_pred(preds, color_labels, gender_labels, binary_labels):
 # roi2 = {'x': 0.5,'y':0.7,'width':0.5,'height':0.3}
 # roi = {'roi1': roi1, 'roi2': roi2}
 
-GPU = True
+GPU = False
 if GPU:
     device = 'cuda'
 else:
@@ -122,7 +122,7 @@ tracker = Tracker(model='yolox-s',ckpt='DETECTOR_models/yolox_s.pth',filter_clas
 ###################################################################################################### load par model
 models_path = {'uc_model':'PAR_models/best_model_uc_alexnet.pth',
                 'lc_model':'PAR_models/best_model_lc_alexnet.pth',
-                'g_model':'PAR_models/best_model_g_resnet.pth',
+                'g_model':'PAR_models/best_model_g_alexnet.pth',
                 'b_model':'PAR_models/best_model_b_alexnet.pth',
                 'h_model':'PAR_models/best_model_h_alexnet.pth'}
     
