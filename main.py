@@ -5,6 +5,7 @@ import argparse
 import json
 from time import time
 import math
+import sys
 
 from yolov8_tracker import Tracker
 #from YOLOX.yolox.data.datasets import COCO_CLASSES as class_names
@@ -117,7 +118,6 @@ for r in roi.keys():
     roi[r]['y'] *= processing_height
     roi[r]['width'] *= processing_width
     roi[r]['height'] *= processing_height
-#print('ROI:',"\n",roi)
 ###################################################################################################### load tracker/detector
 tracker = Tracker(model='yolox-s',ckpt='DETECTOR_models/yolox_s.pth',filter_class=['person'],gpu=GPU)    # instantiate Tracker
 
@@ -155,6 +155,9 @@ count_struct = {}               # contiene per ogni label quante volte è stata 
 
 
 _, img = cap.read()
+if img is None:
+    print('Video not found')
+    sys.exit(1)
 skip_frame = 5
 fps = cap.get(cv2.CAP_PROP_FPS)
 frames = cap.get(cv2.CAP_PROP_FRAME_COUNT) 
