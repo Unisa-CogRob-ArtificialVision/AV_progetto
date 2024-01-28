@@ -54,8 +54,6 @@ def bb_in_roi(bb, roi):
     return None # restituisco la roi in cui è presente il bb, altrimenti None
     
 
-
-
 def read_config(config_path):
     """Legge il file di configurazione (delle roi)"""
     with open(config_path,'r+') as f:
@@ -90,20 +88,24 @@ def parse_par_pred(preds, color_labels, gender_labels, binary_labels):
 # roi2 = {'x': 0.5,'y':0.7,'width':0.5,'height':0.3}
 # roi = {'roi1': roi1, 'roi2': roi2}
 
-GPU = False
-if GPU:
-    device = 'cuda'
-else:
-    device = 'cpu'
+
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--video",default="C://Users//rosar//Desktop//test_video2.mp4", type=str)
+parser.add_argument("--video",default="C://Users//rosar//Desktop//test4.mp4", type=str)
 parser.add_argument("--configuration",default="config.txt", type=str)
 parser.add_argument("--results",default="results.txt", type=str)
+parser.add_argument("--gpu", default=True, type=bool)
 args, _ = parser.parse_known_args()
 
 print('WORKING WITH ARGS:',args)
 
+GPU = args.gpu
+if GPU:
+    device = ('cuda' if torch.cuda.is_available() else 'cpu') 
+else:
+    device = 'cpu'
+
+print('WORKING WITH DEVICE:',device)
 video_path = args.video
 roi = read_config(args.configuration)
 results_path = args.results
