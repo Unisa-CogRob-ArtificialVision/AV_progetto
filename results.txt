@@ -1,0 +1,148 @@
+{
+   "people": [
+      {
+         "id": 5,
+         "roi1_passages": 1,
+         "roi1_persistence_time": 10,
+         "roi2_passages": 0,
+         "roi2_persistence_time": 0,
+         "upper_color": "black",
+         "lower_color": "gray",
+         "gender": "male",
+         "bag": "false",
+         "hat": "false"
+      },
+      {
+         "id": 7,
+         "roi1_passages": 2,
+         "roi1_persistence_time": 9,
+         "roi2_passages": 0,
+         "roi2_persistence_time": 0,
+         "upper_color": "black",
+         "lower_color": "gray",
+         "gender": "female",
+         "bag": "true",
+         "hat": "false"
+      },
+      {
+         "id": 9,
+         "roi1_passages": 2,
+         "roi1_persistence_time": 21,
+         "roi2_passages": 0,
+         "roi2_persistence_time": 0,
+         "upper_color": "black",
+         "lower_color": "black",
+         "gender": "male",
+         "bag": "false",
+         "hat": "false"
+      },
+      {
+         "id": 10,
+         "roi1_passages": 3,
+         "roi1_persistence_time": 7,
+         "roi2_passages": 0,
+         "roi2_persistence_time": 0,
+         "upper_color": "black",
+         "lower_color": "gray",
+         "gender": "female",
+         "bag": "false",
+         "hat": "false"
+      },
+      {
+         "id": 12,
+         "roi1_passages": 2,
+         "roi1_persistence_time": 6,
+         "roi2_passages": 0,
+         "roi2_persistence_time": 0,
+         "upper_color": "brown",
+         "lower_color": "black",
+         "gender": "male",
+         "bag": "false",
+         "hat": "true"
+      },
+      {
+         "id": 13,
+         "roi1_passages": 1,
+         "roi1_persistence_time": 6,
+         "roi2_passages": 0,
+         "roi2_persistence_time": 0,
+         "upper_color": "black",
+         "lower_color": "black",
+         "gender": "male",
+         "bag": "false",
+         "hat": "false"
+      },
+      {
+         "id": 17,
+         "roi1_passages": 1,
+         "roi1_persistence_time": 1,
+         "roi2_passages": 0,
+         "roi2_persistence_time": 0,
+         "upper_color": "gray",
+         "lower_color": "black",
+         "gender": "male",
+         "bag": "true",
+         "hat": "false"
+      },
+      {
+         "id": 16,
+         "roi1_passages": 5,
+         "roi1_persistence_time": 5,
+         "roi2_passages": 0,
+         "roi2_persistence_time": 0,
+         "upper_color": "black",
+         "lower_color": "black",
+         "gender": "female",
+         "bag": "false",
+         "hat": "false"
+      },
+      {
+         "id": 15,
+         "roi1_passages": 2,
+         "roi1_persistence_time": 2,
+         "roi2_passages": 0,
+         "roi2_persistence_time": 0,
+         "upper_color": "blue",
+         "lower_color": "black",
+         "gender": "male",
+         "bag": "false",
+         "hat": "false"
+      },
+      {
+         "id": 20,
+         "roi1_passages": 1,
+         "roi1_persistence_time": 8,
+         "roi2_passages": 0,
+         "roi2_persistence_time": 0,
+         "upper_color": "white",
+         "lower_color": "gray",
+         "gender": "male",
+         "bag": "false",
+         "hat": "false"
+      },
+      {
+         "id": 21,
+         "roi1_passages": 0,
+         "roi1_persistence_time": 0,
+         "roi2_passages": 1,
+         "roi2_persistence_time": 8,
+         "upper_color": "blue",
+         "lower_color": "black",
+         "gender": "male",
+         "bag": "false",
+         "hat": "false"
+      },
+      {
+         "id": 22,
+         "roi1_passages": 0,
+         "roi1_persistence_time": 0,
+         "roi2_passages": 1,
+         "roi2_persistence_time": 7,
+         "upper_color": "black",
+         "lower_color": "black",
+         "gender": "male",
+         "bag": "false",
+         "hat": "false"
+      }
+   ]
+}

@@ -18,33 +18,33 @@ from tqdm import tqdm
 
 
 class PARModel():
-    def __init__(self, models_path, device, backbone='shufflenet'):
+    def __init__(self, models_path, device, backbone=['resnet']*5):
 
         self.device = device
         # model = resnet18(pretrained=True)
         # self.backbone = torch.nn.Sequential(*(list(model.children())[:-1]))
         # self.backbone.requires_grad = False
-        model_uc = SimpleModel(11,backbone)
+        model_uc = SimpleModel(11,backbone[0])
         checkpoint = torch.load(models_path['uc_model'])
         model_uc.load_state_dict(checkpoint['model_state_dict'])
         # self.uc_head = model_uc.backbone.fc
         model_uc.requires_grad = False
-        model_lc = SimpleModel(11,backbone)
+        model_lc = SimpleModel(11,backbone[1])
         checkpoint = torch.load(models_path['lc_model'])
         model_lc.load_state_dict(checkpoint['model_state_dict'])
         # self.lc_head = model_lc.backbone.fc
         model_lc.requires_grad = False
-        model_g = SimpleModel(2,backbone)
+        model_g = SimpleModel(2,backbone[2])
         checkpoint = torch.load(models_path['g_model'])
         model_g.load_state_dict(checkpoint['model_state_dict'])
         # self.g_head = model_g.backbone.fc
         model_g.requires_grad = False
-        model_b = SimpleModel(2,backbone)
+        model_b = SimpleModel(2,backbone[3])
         checkpoint = torch.load(models_path['b_model'])
         model_b.load_state_dict(checkpoint['model_state_dict'])
         # self.b_head = model_b.backbone.fc
         model_b.requires_grad = False
-        model_h = SimpleModel(2,backbone)
+        model_h = SimpleModel(2,backbone[4])
         checkpoint = torch.load(models_path['h_model'])
         model_h.load_state_dict(checkpoint['model_state_dict'])
         # self.h_head = model_h.backbone.fc

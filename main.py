@@ -97,7 +97,7 @@ else:
     device = 'cpu'
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--video",default="C://Users//rosar//Desktop//test.mp4", type=str)
+parser.add_argument("--video",default="C://Users//rosar//Desktop//test_video2.mp4", type=str)
 parser.add_argument("--configuration",default="config.txt", type=str)
 parser.add_argument("--results",default="results.txt", type=str)
 args, _ = parser.parse_known_args()
@@ -122,19 +122,19 @@ tracker = Tracker(model='yolox-s',ckpt='DETECTOR_models/yolox_s.pth',filter_clas
 ###################################################################################################### load par model
 models_path = {'uc_model':'PAR_models/best_model_uc_alexnet.pth',
                 'lc_model':'PAR_models/best_model_lc_alexnet.pth',
-                'g_model':'PAR_models/best_model_g_alexnet.pth',
+                'g_model':'PAR_models/best_model_g_resnet.pth',
                 'b_model':'PAR_models/best_model_b_alexnet.pth',
                 'h_model':'PAR_models/best_model_h_alexnet.pth'}
     
 color_labels = ['black', 'blue', 'brown', 'gray', 'green', 'orange', 'pink', 'purple', 'red', 'white','yellow']
 gender_labels = ['male','female']
-binary_labels = ['no', 'yes']
+binary_labels = ['false', 'true']
 task_label_pairs = {'upper_color': color_labels,
          'lower_color': color_labels,
          'gender': gender_labels,
          'bag': binary_labels,
          'hat': binary_labels}
-par_model = PARModel(models_path, device, backbone='alexnet')
+par_model = PARModel(models_path, device, backbone=['alexnet']*5)
 par_transforms = T.Compose([
         T.Resize((90,220)),
         T.ToTensor(),
@@ -155,7 +155,9 @@ count_struct = {}               # contiene per ogni label quante volte è stata 
 _, img = cap.read()
 skip_frame = 5
 fps = cap.get(cv2.CAP_PROP_FPS)
+frames = cap.get(cv2.CAP_PROP_FRAME_COUNT) 
 frame = 0
+start_time = time()
 while img is not None:
     ss = time()
     frame += 1
@@ -179,7 +181,7 @@ while img is not None:
             x1, y1, x2, y2 = bb[:-1]
 
             occupied_roi = bb_in_roi(bb,roi)
-            if occupied_roi is not None or True:       
+            if occupied_roi is not None:       
 
                 patch = par_transforms(Image.fromarray(final_img[y1:y2,x1:x2].copy())).unsqueeze(0).to(device)
                 pred_uc, pred_lc, pred_g, pred_b, pred_h = par_model.predict(patch)
@@ -261,3 +263,10 @@ while img is not None:
         cv2.imshow('test_roi',final_img)
         cv2.waitKey(1)
     _, img = cap.read()
+total_time = time() - start_time
+print('VIDEO LENGHT:',round(frame/fps),"seconds")
+print('TOTAL TIME:',round(total_time),"seconds")
+json_object = json.dumps(results_json, indent = 3)
+f = open(results_path, 'w+')
+f.write(json_object)
+print('RESULTS written to:',results_path)

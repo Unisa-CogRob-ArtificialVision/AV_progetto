@@ -28,8 +28,8 @@ class SimpleModel(nn.Module):
         print('LOADING MODEL: ', model)
         self.backbone = models[model]
         #print(self.backbone)
-        for param in self.backbone.parameters():
-            param.requires_grad = False
+        # for param in self.backbone.parameters():
+        #     param.requires_grad = False
         if model == 'alexnet' or model == 'vgg11':
             self.backbone.classifier[6] = nn.Linear(4096, num_classes)
             self.backbone.classifier[6].requires_grad = True
