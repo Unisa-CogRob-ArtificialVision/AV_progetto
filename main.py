@@ -7,8 +7,11 @@ from time import time
 import math
 import sys
 
-from yolov8_tracker import Tracker
+#from tracker import Tracker
+from DeepSort_yolov8 import Tracker
 #from YOLOX.yolox.data.datasets import COCO_CLASSES as class_names
+
+#from yolov8_tracker import Tracker
 
 import torch
 from torchvision import transforms as T
@@ -124,7 +127,7 @@ tracker = Tracker(model='yolox-s',ckpt='DETECTOR_models/yolox_s.pth',filter_clas
 ###################################################################################################### load par model
 models_path = {'uc_model':'PAR_models/best_model_uc_alexnet.pth',
                 'lc_model':'PAR_models/best_model_lc_alexnet.pth',
-                'g_model':'PAR_models/best_model_g_alexnet.pth',
+                'g_model':'PAR_models/best_model_g_vgg11.pth',
                 'b_model':'PAR_models/best_model_b_alexnet.pth',
                 'h_model':'PAR_models/best_model_h_alexnet.pth'}
     
@@ -136,7 +139,7 @@ task_label_pairs = {'upper_color': color_labels,
          'gender': gender_labels,
          'bag': binary_labels,
          'hat': binary_labels}
-par_model = PARModel(models_path, device, backbone=['alexnet']*5)
+par_model = PARModel(models_path, device, backbone=['alexnet', 'alexnet', 'vgg11', 'alexnet', 'alexnet'])
 par_transforms = T.Compose([
         T.Resize((90,220)),
         T.ToTensor(),
@@ -158,8 +161,11 @@ _, img = cap.read()
 if img is None:
     print('Video not found')
     sys.exit(1)
-skip_frame = 5
+
 fps = cap.get(cv2.CAP_PROP_FPS)
+fps_target = 6
+skip_frame = int(fps/fps_target)        # skip_frame based on fps_target and fps of the input video
+print('USING SKIP FRAME:', skip_frame)
 frames = cap.get(cv2.CAP_PROP_FRAME_COUNT) 
 frame = 0
 start_time = time()
@@ -186,6 +192,7 @@ while img is not None:
             x1, y1, x2, y2 = bb[:-1]
 
             occupied_roi = bb_in_roi(bb,roi)
+            occupied_roi = 'roi1'
             if occupied_roi is not None:       
 
                 patch = par_transforms(Image.fromarray(final_img[y1:y2,x1:x2].copy())).unsqueeze(0).to(device)
@@ -255,7 +262,7 @@ while img is not None:
                 
 
                 final_img = draw_bbox(final_img, bb, par_data, id)
-        final_img = insert_roi_sensors(final_img, roi) 
+        #final_img = insert_roi_sensors(final_img, roi)                         ##### DECOMMENTARE per inserire roi nell'immagine
         e = time() - s
         print('PAR time:',e)    
         for id in additional_info.keys():
