@@ -7,9 +7,9 @@ from time import time
 import math
 import sys
 
-#from DeepSort_yolov8 import Tracker
+from DeepSort_yolov8 import Tracker
 
-from yolov8_tracker import Tracker
+#from yolov8_tracker import Tracker
 
 import torch
 from torchvision import transforms as T
@@ -67,12 +67,12 @@ def draw_bbox(img, bb, par_data, id):
     """Disegna il bounding box nell'immagine ed inserisce le informazioni di tracking (id) e i dati di PAR"""
     x1, y1 = bb[0], bb[1]
     x2, y2 = bb[2], bb[3]
-    cv2.rectangle(img,(x1, y1), (x2, y2), (0, 255, 0))
+    cv2.rectangle(img,(x1, y1), (x2, y2), (255, 0, 50))
     id_size = cv2.getTextSize('Person ' + str(id), cv2.FONT_HERSHEY_SIMPLEX, 0.4, 1)[0]
-    cv2.putText(img, 'Person ' + str(id), (x1+1, y1 + id_size[1]), cv2.FONT_HERSHEY_SIMPLEX,0.4,(0, 255, 0), thickness=1)
+    cv2.putText(img, 'Person ' + str(id), (x1+1, y1 + id_size[1]), cv2.FONT_HERSHEY_SIMPLEX,0.4,(255, 255, 255), thickness=1)
     for i,attr in enumerate(par_data.keys()):
         txt_size = cv2.getTextSize(attr+": "+par_data[attr], cv2.FONT_HERSHEY_SIMPLEX, 0.4, 1)[0]
-        cv2.putText(img, attr+": "+par_data[attr], (x1+1, y1+((i+1)*10) + txt_size[1]), cv2.FONT_HERSHEY_SIMPLEX,0.4,(0, 255, 0), thickness=1)
+        cv2.putText(img, attr+": "+par_data[attr], (x1+1, y2+((i+1)*10) + txt_size[1]), cv2.FONT_HERSHEY_SIMPLEX,0.4,(255, 255, 255), thickness=1)
     return img
 
 def parse_par_pred(preds, color_labels, gender_labels, binary_labels):
@@ -115,7 +115,7 @@ for r in roi.keys():
     roi[r]['width'] *= processing_width
     roi[r]['height'] *= processing_height
 ###################################################################################################### load tracker/detector
-tracker = Tracker()    # instantiate Tracker
+tracker = Tracker(gpu=GPU)    # instantiate Tracker
 
 ###################################################################################################### load par model
 models_path = {'uc_model':'PAR/PAR_models/best_model_uc_alexnet_batch_mod_asym_mod_MIGLIORE.pth',
@@ -183,7 +183,7 @@ while img is not None:
             x1, y1, x2, y2 = bb[:-1]
 
             occupied_roi = bb_in_roi(bb,roi)
-            #occupied_roi = 'roi1'
+            occupied_roi = 'roi1'
             if occupied_roi is not None: 
                 h, w, _ = final_img.shape      
                 bb[1] = y1 = (y1-5 if y1-5 > 0 else y1)

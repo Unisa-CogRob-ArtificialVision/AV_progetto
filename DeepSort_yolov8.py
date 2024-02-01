@@ -10,8 +10,8 @@ from utils.visualize import vis_track
 
 
 class Tracker():
-    def __init__(self, filter_class=None, model='yolox-s', ckpt='yolox_s.pth', gpu=False):
-        self.detector =  YOLO('DETECTOR_models/yolov8s.pt') # load yolov8 detector from ultralytics
+    def __init__(self, filter_class=None, model='yolox-s', ckpt='yolox_s.pth', gpu=True):
+        self.detector =  YOLO('DETECTOR_models/yolov8l.pt') # load yolov8 detector from ultralytics
         cfg = get_config()
         cfg.merge_from_file("deep_sort/configs/deep_sort.yaml")
         print('CONFIG DEEPSORT: ', cfg.DEEPSORT)
