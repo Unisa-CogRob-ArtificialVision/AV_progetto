@@ -55,9 +55,9 @@ def min_cost_matching(
 
     cost_matrix = distance_metric(
         tracks, detections, track_indices, detection_indices)
-    cost_matrix[cost_matrix > max_distance] = max_distance + 1e-5
+    cost_matrix[cost_matrix > max_distance] = max_distance + 1e-5   # perchè fare maggiore o uguale dopo pareva brutto (probabilmente serve per linear_assignment())
 
-    row_indices, col_indices = linear_assignment(cost_matrix)
+    row_indices, col_indices = linear_assignment(cost_matrix)   # torva l'assegnazione a costo minimo (righe == track e colonne == detections)
 
     matches, unmatched_tracks, unmatched_detections = [], [], []
     for col, detection_idx in enumerate(detection_indices):
@@ -66,7 +66,7 @@ def min_cost_matching(
     for row, track_idx in enumerate(track_indices):
         if row not in row_indices:
             unmatched_tracks.append(track_idx)
-    for row, col in zip(row_indices, col_indices):
+    for row, col in zip(row_indices, col_indices):  # scorre lungo tutte le righe/colonne restituite da lienar assignment (cioè quelle a costo minimo)
         track_idx = track_indices[row]
         detection_idx = detection_indices[col]
         if cost_matrix[row, col] > max_distance:

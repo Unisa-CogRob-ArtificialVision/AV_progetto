@@ -1,10 +1,12 @@
 DEEPSORT:
   REID_CKPT: "deep_sort/deep_sort/deep/checkpoint/ckpt.t7"
   MAX_DIST: 0.2
-  MIN_CONFIDENCE: 0.5
+  MIN_CONFIDENCE: 0.25     # confidenza per la detection
   NMS_MAX_OVERLAP: 0.5
-  MAX_IOU_DISTANCE: 0.7
-  MAX_AGE: 120
-  N_INIT: 3
-  NN_BUDGET: 100
+  MAX_IOU_DISTANCE: 0.75
+  MAX_AGE: 78              #  numero di frames prima di eliminare un track
+  N_INIT: 0
+  NN_BUDGET: 50
   
+## La distance metric restituisce una matrice in cui l'elemento i,j rappresenta il costo nell'associare il track i con la detection j.
+## Se il costo è maggiore di MAX_DIST, allora il track e la detection vengono ignorati (vengono cioè segnati come unmatched)

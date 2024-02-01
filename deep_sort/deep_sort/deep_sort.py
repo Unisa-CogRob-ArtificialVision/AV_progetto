@@ -27,7 +27,7 @@ class DeepSort(object):
         self.extractor = Extractor(model_path, use_cuda=use_cuda)
 
         max_cosine_distance = max_dist
-        nn_budget = 100
+        #nn_budget = 100
         metric = NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
         self.tracker = Tracker(metric, max_iou_distance=max_iou_distance, max_age=max_age, n_init=n_init)
 
@@ -36,26 +36,13 @@ class DeepSort(object):
             self.height, self.width = ori_img.shape[:2]
 
         # generate detections
-            
             features = self._get_features(bbox_xywh, ori_img)
             bbox_tlwh = self._xywh_to_tlwh(bbox_xywh)
             detections = [Detection(bbox_tlwh[i], conf, features[i]) for i,conf in enumerate(confidences) if conf>self.min_confidence]
             
-            det = []
+            ## salvare detections per testing (qui)
             for d in detections:
                 self.det.append([d,self.frame])
-                # with open('save.npy','ab') as f:
-                #     pickle.dump(d,f)
-            #     tlwh = d.tlwh
-            #     confidence = d.confidence
-            #     feature = d.feature
-            #     frame = self.frame
-                
-            #     det.append(np.concatenate((tlwh,[confidence],feature,[frame])))
-            # self.det = det
-
-            #np.save(self.f,np.asarray(det))
-            # np.save(self.f,np.asarray(detections))
             self.frame +=1
 
         # run on non-maximum supression
@@ -64,11 +51,10 @@ class DeepSort(object):
         indices = non_max_suppression(boxes, self.nms_max_overlap, scores)
         detections = [detections[i] for i in indices]
 
-        ## salvare detections per testing (qui)
 
         # update tracker
-        self.tracker.predict()
-        self.tracker.update(detections)
+        self.tracker.predict()      # usa il filtro di kalman sulle tracce
+        self.tracker.update(detections) # aggiorna lo stato del tracker
 
         # output bbox identities
         outputs = []

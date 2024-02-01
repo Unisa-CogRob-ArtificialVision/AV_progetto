@@ -120,6 +120,8 @@ class Track:
 
         """
         self.mean, self.covariance = kf.predict(self.mean, self.covariance)
+        # self.mean[4] *= 1.01
+        # self.mean[5] *= 1.01
         self.age += 1
         self.time_since_update += 1
 

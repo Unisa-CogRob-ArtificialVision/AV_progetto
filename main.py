@@ -67,12 +67,12 @@ def draw_bbox(img, bb, par_data, id):
     """Disegna il bounding box nell'immagine ed inserisce le informazioni di tracking (id) e i dati di PAR"""
     x1, y1 = bb[0], bb[1]
     x2, y2 = bb[2], bb[3]
-    cv2.rectangle(img,(x1, y1), (x2, y2), (255, 0, 50))
+    cv2.rectangle(img,(x1, y1), (x2, y2), (255, 255, 255))
     id_size = cv2.getTextSize('Person ' + str(id), cv2.FONT_HERSHEY_SIMPLEX, 0.4, 1)[0]
-    cv2.putText(img, 'Person ' + str(id), (x1+1, y1 + id_size[1]), cv2.FONT_HERSHEY_SIMPLEX,0.4,(255, 255, 255), thickness=1)
+    cv2.putText(img, 'Person ' + str(id), (x1+1, y1 + id_size[1]), cv2.FONT_HERSHEY_SIMPLEX,0.4,(255, 0, 50), thickness=1)
     for i,attr in enumerate(par_data.keys()):
         txt_size = cv2.getTextSize(attr+": "+par_data[attr], cv2.FONT_HERSHEY_SIMPLEX, 0.4, 1)[0]
-        cv2.putText(img, attr+": "+par_data[attr], (x1+1, y2+((i+1)*10) + txt_size[1]), cv2.FONT_HERSHEY_SIMPLEX,0.4,(255, 255, 255), thickness=1)
+        cv2.putText(img, attr+": "+par_data[attr], (x1+1, y2+((i+1)*10) + txt_size[1]), cv2.FONT_HERSHEY_SIMPLEX,0.4,(255, 0, 50), thickness=1)
     return img
 
 def parse_par_pred(preds, color_labels, gender_labels, binary_labels):
