@@ -39,13 +39,13 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    det_paths = ['MOT16-02.npy',
-                'MOT16-04.npy',
-                'MOT16-05.npy',
-                'MOT16-09.npy',
-                'MOT16-10.npy',
-                'MOT16-11.npy',
-                'MOT16-13.npy']
+    det_paths = [  'TRACKER_TEST/detections/MOT16-02.npy',
+                'TRACKER_TEST/detections/MOT16-04.npy',
+                'TRACKER_TEST/detections/MOT16-05.npy',
+                'TRACKER_TEST/detections/MOT16-09.npy',
+                'TRACKER_TEST/detections/MOT16-10.npy',
+                'TRACKER_TEST/detections/MOT16-11.npy',
+                'TRACKER_TEST/detections/MOT16-13.npy']
     
     os.makedirs(args.output_dir, exist_ok=True)
     sequences = os.listdir(args.mot_dir)

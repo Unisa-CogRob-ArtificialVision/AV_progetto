@@ -267,13 +267,7 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    det_paths = [  'MOT16-02.npy',
-                'MOT16-04.npy',
-                'MOT16-05.npy',
-                'MOT16-09.npy',
-                'MOT16-10.npy',
-                'MOT16-11.npy',
-                'MOT16-13.npy']
+    
     run(
         args.sequence_dir, args.detection_file, args.output_file,
         args.min_confidence, args.nms_max_overlap, args.min_detection_height,

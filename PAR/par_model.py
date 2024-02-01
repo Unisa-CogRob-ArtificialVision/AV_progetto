@@ -6,7 +6,7 @@ from torchvision import transforms
 from torchvision.models import resnet18
 from sklearn.model_selection import train_test_split
 from torchvision.datasets import ImageFolder
-from par_train import SimpleModel, CustomDataset
+from .par_train import SimpleModel, CustomDataset
 from matplotlib import pyplot as plt
 import os
 import sys

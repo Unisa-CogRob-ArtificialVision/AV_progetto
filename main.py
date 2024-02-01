@@ -16,7 +16,7 @@ from yolov8_tracker import Tracker
 import torch
 from torchvision import transforms as T
 from PIL import Image
-from par_model import PARModel
+from PAR.par_model import PARModel
 
 
 ###################################################################################################### utility functions
@@ -125,11 +125,11 @@ for r in roi.keys():
 tracker = Tracker(model='yolox-s',ckpt='DETECTOR_models/yolox_s.pth',filter_class=['person'],gpu=GPU)    # instantiate Tracker
 
 ###################################################################################################### load par model
-models_path = {'uc_model':'PAR_models/best_model_uc_alexnet.pth',
-                'lc_model':'PAR_models/best_model_lc_alexnet.pth',
-                'g_model':'PAR_models/best_model_g_vgg11.pth',
-                'b_model':'PAR_models/best_model_b_alexnet.pth',
-                'h_model':'PAR_models/best_model_h_alexnet.pth'}
+models_path = {'uc_model':'PAR/PAR_models/best_model_uc_alexnet_batch_mod_asym_mod_MIGLIORE.pth',
+                'lc_model':'PAR/PAR_models/best_model_lc_alexnet_batch_mod_asym_mod_v2_continue_MIGLIORE.pth',
+                'g_model':'PAR/PAR_models/best_model_g_alexnet_batch_mod_asym_mod_MIGLIORE.pth',
+                'b_model':'PAR/PAR_models/best_model_b_alexnet_batch_mod_asym_MIGLIORE.pth',
+                'h_model':'PAR/PAR_models/best_model_h_alexnet_batch_mod_asym_mod_v2_MIGLIORE.pth'}
     
 color_labels = ['black', 'blue', 'brown', 'gray', 'green', 'orange', 'pink', 'purple', 'red', 'white','yellow']
 gender_labels = ['male','female']
@@ -139,7 +139,7 @@ task_label_pairs = {'upper_color': color_labels,
          'gender': gender_labels,
          'bag': binary_labels,
          'hat': binary_labels}
-par_model = PARModel(models_path, device, backbone=['alexnet', 'alexnet', 'vgg11', 'alexnet', 'alexnet'])
+par_model = PARModel(models_path, device, backbone=['alexnet', 'alexnet', 'alexnet', 'alexnet', 'alexnet'])
 par_transforms = T.Compose([
         T.Resize((90,220)),
         T.ToTensor(),
