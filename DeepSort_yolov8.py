@@ -10,8 +10,8 @@ from utils.visualize import vis_track
 
 
 class Tracker():
-    def __init__(self, filter_class=None, model='yolox-s', ckpt='yolox_s.pth', gpu=False):
-        self.detector =  YOLO('DETECTOR_models/yolov8s.pt')
+    def __init__(self, filter_class=None, model='yolox-s', ckpt='yolox_s.pth', gpu=True):
+        self.detector =  YOLO('DETECTOR_models/yolov8l.pt') # load yolov8 detector from ultralytics
         cfg = get_config()
         cfg.merge_from_file("deep_sort/configs/deep_sort.yaml")
         print('CONFIG DEEPSORT: ', cfg.DEEPSORT)
@@ -30,8 +30,7 @@ class Tracker():
         bbox = []
         scores = []
         # detect and track only the people (class 0 in COCO dataset)
-        with HiddenPrints():
-            results = self.detector(source=image,classes=0, show_labels=False,show_conf=False, show_boxes=False)
+        results = self.detector(source=image,classes=0, show_labels=False,show_conf=False, show_boxes=False)
         try:
             boxes = results[0].boxes.xywh
             for i,box in enumerate(boxes):
@@ -39,22 +38,12 @@ class Tracker():
                 x1, y1, w, h = int(box[0].item()), int(box[1].item()), int(box[2].item()), int(box[3].item())  
                 bbox.append([x1,y1,w,h])
             bbox_xywh = torch.Tensor(bbox)
-            outputs = self.deepsort.update(bbox_xywh, scores, image)
-            image = vis_track(image, outputs)
+            outputs = self.deepsort.update(bbox_xywh, scores, image)    # update tracker state
+            #image = vis_track(image, outputs)
 
-        except Exception:
+        except Exception:   # empty results
             bbox = []
             outputs = []
+
         return image, outputs
 
-import os
-import sys
-
-class HiddenPrints:
-    def __enter__(self):
-        self._original_stdout = sys.stdout
-        sys.stdout = open(os.devnull, 'w')
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        sys.stdout.close()
-        sys.stdout = self._original_stdout

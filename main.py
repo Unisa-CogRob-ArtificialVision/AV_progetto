@@ -7,11 +7,9 @@ from time import time
 import math
 import sys
 
-#from tracker import Tracker
-#from DeepSort_yolov8 import Tracker
-#from YOLOX.yolox.data.datasets import COCO_CLASSES as class_names
+from DeepSort_yolov8 import Tracker
 
-from yolov8_tracker import Tracker
+#from yolov8_tracker import Tracker
 
 import torch
 from torchvision import transforms as T
@@ -30,7 +28,7 @@ def insert_roi_sensors(img, roi):
         h, w, _ = img.shape
         x1, y1 = int(x), int(y)
         x2, y2 = int(width + x1), int(height + y1)
-        cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 0))
+        cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 0)) ## inserire colore nero
     return img
 
 ##### convenzione bb -> [x1, y1, x2, y2]    (x1,y1) coordinate angolo superiore sinistro, (x2,y2) coordinate angolo inferiore destro
@@ -69,12 +67,12 @@ def draw_bbox(img, bb, par_data, id):
     """Disegna il bounding box nell'immagine ed inserisce le informazioni di tracking (id) e i dati di PAR"""
     x1, y1 = bb[0], bb[1]
     x2, y2 = bb[2], bb[3]
-    cv2.rectangle(img,(x1, y1), (x2, y2), (0, 255, 0))
+    cv2.rectangle(img,(x1, y1), (x2, y2), (255, 0, 50))
     id_size = cv2.getTextSize('Person ' + str(id), cv2.FONT_HERSHEY_SIMPLEX, 0.4, 1)[0]
-    cv2.putText(img, 'Person ' + str(id), (x1+1, y1 + id_size[1]), cv2.FONT_HERSHEY_SIMPLEX,0.4,(0, 255, 0), thickness=1)
+    cv2.putText(img, 'Person ' + str(id), (x1+1, y1 + id_size[1]), cv2.FONT_HERSHEY_SIMPLEX,0.4,(255, 255, 255), thickness=1)
     for i,attr in enumerate(par_data.keys()):
         txt_size = cv2.getTextSize(attr+": "+par_data[attr], cv2.FONT_HERSHEY_SIMPLEX, 0.4, 1)[0]
-        cv2.putText(img, attr+": "+par_data[attr], (x1+1, y1+((i+1)*10) + txt_size[1]), cv2.FONT_HERSHEY_SIMPLEX,0.4,(0, 255, 0), thickness=1)
+        cv2.putText(img, attr+": "+par_data[attr], (x1+1, y2+((i+1)*10) + txt_size[1]), cv2.FONT_HERSHEY_SIMPLEX,0.4,(255, 255, 255), thickness=1)
     return img
 
 def parse_par_pred(preds, color_labels, gender_labels, binary_labels):
@@ -88,11 +86,6 @@ def parse_par_pred(preds, color_labels, gender_labels, binary_labels):
     return {'upper_color':uc_label,'lower_color': lc_label,'gender': g_label,'bag': b_label,'hat': h_label}
 
 ###################################################################################################### read configs
-# roi1 = {'x': 0.1,'y':0.1,'width':0.4,'height':0.4}
-# roi2 = {'x': 0.5,'y':0.7,'width':0.5,'height':0.3}
-# roi = {'roi1': roi1, 'roi2': roi2}
-
-
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--video",default="C://Users//rosar//Desktop//test_video.mp4", type=str)
@@ -122,7 +115,7 @@ for r in roi.keys():
     roi[r]['width'] *= processing_width
     roi[r]['height'] *= processing_height
 ###################################################################################################### load tracker/detector
-tracker = Tracker(model='yolox-s',ckpt='DETECTOR_models/yolox_s.pth',filter_class=['person'],gpu=GPU)    # instantiate Tracker
+tracker = Tracker(gpu=GPU)    # instantiate Tracker
 
 ###################################################################################################### load par model
 models_path = {'uc_model':'PAR/PAR_models/best_model_uc_alexnet_batch_mod_asym_mod_MIGLIORE.pth',
@@ -139,22 +132,18 @@ task_label_pairs = {'upper_color': color_labels,
          'gender': gender_labels,
          'bag': binary_labels,
          'hat': binary_labels}
-par_model = PARModel(models_path, device, backbone=['alexnet', 'alexnet', 'alexnet', 'alexnet', 'alexnet'])
+par_model = PARModel(models_path, device, backbone=['alexnet']*5)
 par_transforms = T.Compose([
         T.Resize((90,220)),
         T.ToTensor(),
         T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
 
-#from par_yolo_skele import color_detector
-#par_model = color_detector()
-
 ###################################################################################################### load video
 cap = cv2.VideoCapture(video_path)
 
 ###################################################################################################### start application
 
-#bbox_test = [[0,0,10,10, 1], [100,100,130,130, 2], [200,200,240,250, 3], [1000,900,1050,950, 4]]
 tracking_id = {}                # contiene le persone tracciate dall'algoritmo (con tutti gli id e le info)
 results_json = {"people": []}   # conitene l'output file
 additional_info = {}            # contiene informazioni aggiuntive sulle persone tracciate
@@ -169,7 +158,6 @@ if img is None:
 fps = cap.get(cv2.CAP_PROP_FPS)
 fps_target = 6
 skip_frame = int(fps/fps_target)        # skip_frame based on fps_target and fps of the input video
-#skip_frame = 10
 print('USING SKIP FRAME:', skip_frame)
 frames = cap.get(cv2.CAP_PROP_FRAME_COUNT) 
 frame = 0
@@ -177,15 +165,13 @@ start_time = time()
 while img is not None:
     ss = time()
     frame += 1
-
-    #par_data = []
     updated_id = []
     ##### tracking -> outputs the bounding_boxes
     if frame % skip_frame == 0:
         final_img = cv2.resize(img, (processing_width,processing_height)).copy()
         s = time()
         ### track   -> outputs the bounding box
-        img_visual, bbox = tracker.update(final_img.copy())
+        _, bbox = tracker.update(final_img.copy())
         e = time() - s
         print('TRACK time:',e)
         
@@ -274,16 +260,13 @@ while img is not None:
                 
 
                 final_img = draw_bbox(final_img, bb, par_data, id)
-        #final_img = insert_roi_sensors(final_img, roi)                         ##### DECOMMENTARE per inserire roi nell'immagine
+        final_img = insert_roi_sensors(final_img, roi)                         ##### DECOMMENTARE per inserire roi nell'immagine
         e = time() - s
         print('PAR time:',e)    
         for id in additional_info.keys():
             if id not in updated_id:
                 additional_info[id]['current_roi'] = None
 
-        #json_object = json.dumps(count_struct, indent = 3)
-        #json_object = json.dumps(results_json['people'], indent = 3) 
-        #print(json_object)
         cv2.imshow('test_roi',final_img)
         cv2.waitKey(1)
     _, img = cap.read()
