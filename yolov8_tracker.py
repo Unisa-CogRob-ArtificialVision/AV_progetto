@@ -15,7 +15,6 @@ class Tracker():
             boxes = results[0].boxes.xyxy
             ids = results[0].boxes.id.int().cpu().tolist()
             for i,box in enumerate(boxes):
-                sublist = [] 
                 id = ids[i]
                 x1, y1, x2, y2 = int(box[0].item()), int(box[1].item()), int(box[2].item()), int(box[3].item())  
                 bbox.append([x1,y1,x2,y2,id])

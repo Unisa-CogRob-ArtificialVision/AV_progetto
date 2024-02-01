@@ -12,3 +12,5 @@ zzz.py
 *.pth
 *.pt
 MOT16
+TRACKER_TEST/detection
+resources

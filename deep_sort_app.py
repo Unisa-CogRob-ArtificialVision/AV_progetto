@@ -168,7 +168,7 @@ def run(sequence_dir, detection_file, output_file, min_confidence,
         print("Processing frame %05d" % frame_idx)
 
         detections = []
-        # Load image and generate detections.
+        # Load detections from detections folder 
         with open(detection_path,'rb') as f:
             det = pickle.load(f)
 
@@ -267,8 +267,14 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    
+    det_paths = [  'TRACKER_TEST/detections/MOT16-02.npy',
+                'TRACKER_TEST/detections/MOT16-04.npy',
+                'TRACKER_TEST/detections/MOT16-05.npy',
+                'TRACKER_TEST/detections/MOT16-09.npy',
+                'TRACKER_TEST/detections/MOT16-10.npy',
+                'TRACKER_TEST/detections/MOT16-11.npy',
+                'TRACKER_TEST/detections/MOT16-13.npy']
     run(
         args.sequence_dir, args.detection_file, args.output_file,
         args.min_confidence, args.nms_max_overlap, args.min_detection_height,
-        args.max_cosine_distance, args.nn_budget, args.display, det_paths[0])
+        args.max_cosine_distance, args.nn_budget, args.display, detection_path=det_paths[0])

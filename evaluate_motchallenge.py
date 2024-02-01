@@ -10,13 +10,13 @@ def parse_args():
     parser = argparse.ArgumentParser(description="MOTChallenge evaluation")
     parser.add_argument(
         "--mot_dir", help="Path to MOTChallenge directory (train or test)",
-        required=True)
+        required=True, default="./MOT16/train/")
     parser.add_argument(
         "--detection_dir", help="Path to detections.", default="detections",
-        required=True)
+        required=True, default="./resources/detections/MOT16_POI_train")
     parser.add_argument(
         "--output_dir", help="Folder in which the results will be stored. Will "
-        "be created if it does not exist.", default="results")
+        "be created if it does not exist.", default="./TRACKER_TEST/TEST_ROOT")
     parser.add_argument(
         "--min_confidence", help="Detection confidence threshold. Disregard "
         "all detections that have a confidence lower than this value.",
@@ -24,7 +24,7 @@ def parse_args():
     parser.add_argument(
         "--min_detection_height", help="Threshold on the detection bounding "
         "box height. Detections with height smaller than this value are "
-        "disregarded", default=0, type=int)
+        "disregarded", default=0, type=int) # not used
     parser.add_argument(
         "--nms_max_overlap",  help="Non-maxima suppression threshold: Maximum "
         "detection overlap.", default=1.0, type=float)
@@ -39,6 +39,7 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
+    # paths to detection files
     det_paths = [  'TRACKER_TEST/detections/MOT16-02.npy',
                 'TRACKER_TEST/detections/MOT16-04.npy',
                 'TRACKER_TEST/detections/MOT16-05.npy',
@@ -46,6 +47,7 @@ if __name__ == "__main__":
                 'TRACKER_TEST/detections/MOT16-10.npy',
                 'TRACKER_TEST/detections/MOT16-11.npy',
                 'TRACKER_TEST/detections/MOT16-13.npy']
+    
     
     os.makedirs(args.output_dir, exist_ok=True)
     sequences = os.listdir(args.mot_dir)
