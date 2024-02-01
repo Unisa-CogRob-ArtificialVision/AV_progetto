@@ -8,10 +8,10 @@ import math
 import sys
 
 #from tracker import Tracker
-from DeepSort_yolov8 import Tracker
+#from DeepSort_yolov8 import Tracker
 #from YOLOX.yolox.data.datasets import COCO_CLASSES as class_names
 
-#from yolov8_tracker import Tracker
+from yolov8_tracker import Tracker
 
 import torch
 from torchvision import transforms as T
@@ -95,7 +95,7 @@ def parse_par_pred(preds, color_labels, gender_labels, binary_labels):
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--video",default="C://Users//rosar//Desktop//test4.mp4", type=str)
+parser.add_argument("--video",default="C://Users//rosar//Desktop//test_video.mp4", type=str)
 parser.add_argument("--configuration",default="config.txt", type=str)
 parser.add_argument("--results",default="results.txt", type=str)
 parser.add_argument("--gpu", default=True, type=bool)
@@ -145,12 +145,16 @@ par_transforms = T.Compose([
         T.ToTensor(),
         T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
+
+#from par_yolo_skele import color_detector
+#par_model = color_detector()
+
 ###################################################################################################### load video
 cap = cv2.VideoCapture(video_path)
 
 ###################################################################################################### start application
 
-bbox_test = [[0,0,10,10, 1], [100,100,130,130, 2], [200,200,240,250, 3], [1000,900,1050,950, 4]]
+#bbox_test = [[0,0,10,10, 1], [100,100,130,130, 2], [200,200,240,250, 3], [1000,900,1050,950, 4]]
 tracking_id = {}                # contiene le persone tracciate dall'algoritmo (con tutti gli id e le info)
 results_json = {"people": []}   # conitene l'output file
 additional_info = {}            # contiene informazioni aggiuntive sulle persone tracciate
@@ -165,6 +169,7 @@ if img is None:
 fps = cap.get(cv2.CAP_PROP_FPS)
 fps_target = 6
 skip_frame = int(fps/fps_target)        # skip_frame based on fps_target and fps of the input video
+#skip_frame = 10
 print('USING SKIP FRAME:', skip_frame)
 frames = cap.get(cv2.CAP_PROP_FRAME_COUNT) 
 frame = 0
@@ -193,9 +198,16 @@ while img is not None:
 
             occupied_roi = bb_in_roi(bb,roi)
             occupied_roi = 'roi1'
-            if occupied_roi is not None:       
+            if occupied_roi is not None: 
+                h, w, _ = final_img.shape      
+                bb[1] = y1 = (y1-5 if y1-5 > 0 else y1)
+                bb[0] = x1 = (x1-5 if x1-5 > 0 else x1)
+                bb[3] = y2 = (y2+5 if y2+5 < w else y2)
+                bb[2] = x2 = (x2+5 if x2+5 < w else x2)
 
+                #print(x1,y1, x2,y2, h, w)
                 patch = par_transforms(Image.fromarray(final_img[y1:y2,x1:x2].copy())).unsqueeze(0).to(device)
+                 
                 pred_uc, pred_lc, pred_g, pred_b, pred_h = par_model.predict(patch)
                 par_data = parse_par_pred([pred_uc, pred_lc, pred_g, pred_b, pred_h], color_labels, gender_labels, binary_labels)
                 roi_data = {'roi': occupied_roi}
@@ -219,7 +231,7 @@ while img is not None:
                             count_struct[id][task][l] = 0
                     
                 for task in par_data.keys():
-                    count_struct[id][task][par_data[task]] += 1
+                    count_struct[id][task][par_data[task]] += 1  
 
                 for task in count_struct[id]:
                     max = -1

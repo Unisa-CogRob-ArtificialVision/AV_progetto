@@ -4,7 +4,7 @@ from ultralytics import YOLO
 class Tracker():
 
     def __init__(self, **kwargs):
-        self.model = YOLO('DETECTOR_models/yolov8s.pt')
+        self.model = YOLO('DETECTOR_models/yolov8x.pt')
 
     def update(self, image):
         bbox = []

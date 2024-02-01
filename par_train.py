@@ -27,20 +27,12 @@ class SimpleModel(nn.Module):
         
         print('LOADING MODEL: ', model)
         self.backbone = models[model]
-        #print(self.backbone)
-        # for param in self.backbone.parameters():
-        #     param.requires_grad = False
         if model == 'alexnet' or model == 'vgg11':
             self.backbone.classifier[6] = nn.Linear(4096, num_classes)
             self.backbone.classifier[6].requires_grad = True
-            # self.backbone.classifier[4].requires_grad = True
-            # self.backbone.classifier[2].requires_grad = True
-            # self.backbone.classifier[1] = nn.Conv2d(512, num_classes, kernel_size=(1, 1), stride=(1, 1))
-            # self.backbone.classifier[1].requires_grad = True
         else:
             self.backbone.fc = nn.Linear(self.backbone.fc.in_features, num_classes)
             self.backbone.fc.requires_grad = True
-
 
     def forward(self, x):
         x2 = self.backbone(x)
@@ -108,9 +100,9 @@ if __name__ == '__main__':
     ])
 
     #############   
-    lbl = 1             # 0 = upper_color; 1 = lower_color; 2 = gender; 3 = bag; 4 = hat;
-    num_classes = 11    # 11 per upper_color e lower_color, 2 per gli altri
-    save_path = 'models/best_model_lc_alexnet.pth'
+    lbl = 3             # 0 = upper_color; 1 = lower_color; 2 = gender; 3 = bag; 4 = hat;
+    num_classes = 2    # 11 per upper_color e lower_color, 2 per gli altri
+    save_path = 'models/best_model_g_alexnet_pt2.pth'
     #############
 
     train_set = CustomDataset("training_set","training_set.txt", transform, target_label=lbl)
@@ -124,8 +116,8 @@ if __name__ == '__main__':
 
     #print(train_set[0],"\n",val_set[0])
     train_batch_size, val_batch_size = 32, 32
-    val_loader = DataLoader(val_set, batch_size=val_batch_size, shuffle=False)
-    train_loader = DataLoader(train_set, batch_size=train_batch_size, shuffle=True)
+    val_loader = DataLoader(val_set, batch_size=val_batch_size, shuffle=False, num_workers=8)
+    train_loader = DataLoader(train_set, batch_size=train_batch_size, shuffle=True, num_workers=8)
 
     lossFun = nn.CrossEntropyLoss()
 
@@ -186,24 +178,3 @@ if __name__ == '__main__':
         print("TRAIN LOSS EPOCH:", epoch, ":", running_loss/len(train_loader),"ACC:",train_acc/len(train_set))
         print("VAL LOSS EPOCH:", epoch, ":", val_loss/len(val_loader),"ACC:",correct/len(val_set))
 
-    # print('TESTING')
-    # ckt = torch.load(save_path)
-    # model.load_state_dict(ckt['model_state_dict'])
-    # with torch.no_grad():
-        
-    #     for inputs, labels in tqdm(val_loader, desc=f'Epoch {epoch + 1}/{num_epochs}'):
-    #         # if binary:
-    #         #     inputs, labels = inputs.to(device), labels[:,2].to(device)  # prendo solo le label associate al colore dei vestiti
-    #         # else:
-    #         inputs, labels = inputs.to(device), labels[:,lbl].to(device)  # prendo solo le label associate al colore dei vestiti
-    #         outputs = model(inputs)
-    #         # if binary:
-    #         #     outputs = act(outputs)
-    #         # if binary:
-    #         #     loss = lossFun(outputs, labels.unsqueeze(1).to(torch.float32))
-    #         #     correct += ((outputs.squeeze() > 0.5) == labels).sum().item()
-    #         # else:
-    #         correct += ((outputs.argmax(dim=1)) == labels).sum().item()
-    #         loss = lossFun(outputs, labels)
-    #         val_loss += loss.item()
-    #         #print(outputs,(outputs.argmax(dim=1)))

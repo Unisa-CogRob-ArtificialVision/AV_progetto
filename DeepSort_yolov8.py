@@ -1,8 +1,7 @@
 import sys
-sys.path.insert(0, './YOLOX')
+#sys.path.insert(0, './YOLOX')
 
 from ultralytics import YOLO
-
 from deep_sort.utils.parser import get_config
 from deep_sort.deep_sort import DeepSort
 import torch
@@ -15,6 +14,7 @@ class Tracker():
         self.detector =  YOLO('DETECTOR_models/yolov8s.pt')
         cfg = get_config()
         cfg.merge_from_file("deep_sort/configs/deep_sort.yaml")
+        print('CONFIG DEEPSORT: ', cfg.DEEPSORT)
         self.deepsort = DeepSort(cfg.DEEPSORT.REID_CKPT,
                             max_dist=cfg.DEEPSORT.MAX_DIST,
                             min_confidence=cfg.DEEPSORT.MIN_CONFIDENCE,

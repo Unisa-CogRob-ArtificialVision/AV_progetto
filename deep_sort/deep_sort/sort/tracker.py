@@ -66,12 +66,12 @@ class Tracker:
         """
         # Run matching cascade.
         matches, unmatched_tracks, unmatched_detections = \
-            self._match(detections)
+            self._match(detections)                                                     #############
 
         # Update track set.
         for track_idx, detection_idx in matches:
-            self.tracks[track_idx].update(
-                self.kf, detections[detection_idx])
+            self.tracks[track_idx].update(                                              #############
+                self.kf, detections[detection_idx])     # update using kalman filter
         for track_idx in unmatched_tracks:
             self.tracks[track_idx].mark_missed()
         for detection_idx in unmatched_detections:
@@ -87,7 +87,7 @@ class Tracker:
             features += track.features
             targets += [track.track_id for _ in track.features]
             track.features = []
-        self.metric.partial_fit(
+        self.metric.partial_fit(                                                        #############
             np.asarray(features), np.asarray(targets), active_targets)
 
     def _match(self, detections):

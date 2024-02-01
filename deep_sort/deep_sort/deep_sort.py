@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-
+import pickle
 from .deep.feature_extractor import Extractor
 from .sort.nn_matching import NearestNeighborDistanceMetric
 from .sort.preprocessing import non_max_suppression
@@ -22,7 +22,8 @@ class DeepSort(object):
                  use_cuda=True):
         self.min_confidence = min_confidence
         self.nms_max_overlap = nms_max_overlap
-
+        self.frame = 0
+        self.det = []
         self.extractor = Extractor(model_path, use_cuda=use_cuda)
 
         max_cosine_distance = max_dist
@@ -30,19 +31,40 @@ class DeepSort(object):
         metric = NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
         self.tracker = Tracker(metric, max_iou_distance=max_iou_distance, max_age=max_age, n_init=n_init)
 
-    def update(self, bbox_xywh, confidences, ori_img):
-        self.height, self.width = ori_img.shape[:2]
+    def update(self, bbox_xywh, confidences, ori_img, detections = None):
+        if detections is None:
+            self.height, self.width = ori_img.shape[:2]
 
         # generate detections
-        features = self._get_features(bbox_xywh, ori_img)
-        bbox_tlwh = self._xywh_to_tlwh(bbox_xywh)
-        detections = [Detection(bbox_tlwh[i], conf, features[i]) for i,conf in enumerate(confidences) if conf>self.min_confidence]
+            
+            features = self._get_features(bbox_xywh, ori_img)
+            bbox_tlwh = self._xywh_to_tlwh(bbox_xywh)
+            detections = [Detection(bbox_tlwh[i], conf, features[i]) for i,conf in enumerate(confidences) if conf>self.min_confidence]
+            
+            det = []
+            for d in detections:
+                self.det.append([d,self.frame])
+                # with open('save.npy','ab') as f:
+                #     pickle.dump(d,f)
+            #     tlwh = d.tlwh
+            #     confidence = d.confidence
+            #     feature = d.feature
+            #     frame = self.frame
+                
+            #     det.append(np.concatenate((tlwh,[confidence],feature,[frame])))
+            # self.det = det
+
+            #np.save(self.f,np.asarray(det))
+            # np.save(self.f,np.asarray(detections))
+            self.frame +=1
 
         # run on non-maximum supression
         boxes = np.array([d.tlwh for d in detections])
         scores = np.array([d.confidence for d in detections])
         indices = non_max_suppression(boxes, self.nms_max_overlap, scores)
         detections = [detections[i] for i in indices]
+
+        ## salvare detections per testing (qui)
 
         # update tracker
         self.tracker.predict()

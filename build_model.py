@@ -6,9 +6,7 @@ from torchvision import transforms
 from torchvision.models import resnet18
 from sklearn.model_selection import train_test_split
 from torchvision.datasets import ImageFolder
-from attention_mechanisms.se_module import SELayer
-from attention_mechanisms.simam import simam_module
-from .par_train import SimpleModel, CustomDataset
+from par_train import SimpleModel, CustomDataset
 from matplotlib import pyplot as plt
 import os
 import sys
@@ -19,48 +17,49 @@ from tqdm import tqdm
 
 
 
-class PARModel(nn.Module):
-    def __init__(self, models_path):
-        self.backbone = resnet18(pretrained=True)
-        self.backbone.fc = nn.Identity()
-        self.backbone.requires_grad = False
-        model = SimpleModel(11)
+class PARModel():
+    def __init__(self,models_path):
+        #self.backbone = resnet18(pretrained=True)
+        #self.backbone.fc = nn.Identity()
+        #self.backbone.requires_grad = False
+        #model = SimpleModel(11)
         checkpoint = torch.load(models_path['uc_model'])
-        model.load_state_dict(checkpoint['model_state_dict'])
-        self.uc_head = model.fc
-        self.uc_head.requires_grad = False
+        #model.load_state_dict(checkpoint['model_state_dict'])
+        self.uc_loss = checkpoint['loss']
+        #self.uc_head = model.fc
+        #self.uc_head.requires_grad = False
         checkpoint = torch.load(models_path['lc_model'])
-        model.load_state_dict(checkpoint['model_state_dict'])
-        self.lc_head = model.fc
-        self.lc_head.requires_grad = False
+        #model.load_state_dict(checkpoint['model_state_dict'])
+        self.lc_loss = checkpoint['loss']
+        #self.lc_head = model.fc
+        #self.lc_head.requires_grad = False
         checkpoint = torch.load(models_path['g_model'])
-        model.load_state_dict(checkpoint['model_state_dict'])
-        self.g_head = model.fc
-        self.g_head.requires_grad = False
+        #model.load_state_dict(checkpoint['model_state_dict'])
+        self.g_loss = checkpoint['loss']
+        #self.g_head = model.fc
+        #self.g_head.requires_grad = False
         checkpoint = torch.load(models_path['b_model'])
-        model.load_state_dict(checkpoint['model_state_dict'])
-        self.b_head = model.fc
-        self.gbhead.requires_grad = False
+        #model.load_state_dict(checkpoint['model_state_dict'])
+        self.b_loss = checkpoint['loss']
+        #self.b_head = model.fc
+        #self.gbhead.requires_grad = False
         checkpoint = torch.load(models_path['h_model'])
-        model.load_state_dict(checkpoint['model_state_dict'])
-        self.h_head = model.fc
-        self.h_head.requires_grad = False
+        #model.load_state_dict(checkpoint['model_state_dict'])
+        self.h_loss = checkpoint['loss']
+        #self.h_head = model.fc
+        #self.h_head.requires_grad = False
+        print('LOSS:','\nUpper Color:',self.uc_loss,'\nLower Color:', self.lc_loss, '\nGender:',self.g_loss,'\nBag:',self.b_loss,'\nHat:',self.h_loss)
         
-    def forward(self,x):
-        x1 = self.backbone(x)
-        out_uc = self.uc_head(x1)
-        out_lc = self.lc_head(x1)
-        out_g = self.g_head(x1)
-        out_b = self.b_head(x1)
-        out_h = self.h_head(x1)
-        #return torch.cat([out_uc,out_lc,out_g,out_b,out_h],dim=1)
-        return [out_uc,out_lc,out_g,out_b,out_h]
-        
-models_path = {'uc_model':'models/best_model_uc.pth',
-               'lc_model':'models/best_model_lc.pth',
-               'g_model':'models/best_model_g.pth',
-               'b_model':'models/best_model_b.pth',
-               'h_model':'models/best_model_h.pth'}
+if __name__ == '__main__':
+    models_path = {'uc_model':'PAR_models/best_model_uc_alexnet.pth',
+               'lc_model':'PAR_models/best_model_lc_alexnet.pth',
+               'g_model':'PAR_models/best_model_g_alexnet.pth',
+               'b_model':'PAR_models/best_model_b_alexnet.pth',
+               'h_model':'PAR_models/best_model_h_alexnet.pth'}
+    model = PARModel(models_path)
+    exit()
+
+
 
 
 color_labels = ['black', 'blue', 'brown', 'gray', 'green', 'orange', 'pink', 'purple', 'red', 'white','yellow']
