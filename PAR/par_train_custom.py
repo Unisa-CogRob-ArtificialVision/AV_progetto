@@ -9,7 +9,7 @@ from PIL import Image
 from tqdm import tqdm
 from torchvision.models import resnet18, shufflenet_v2_x1_0, squeezenet1_0, mobilenet_v2, alexnet, vgg11, ResNet18_Weights, ShuffleNet_V2_X1_0_Weights, SqueezeNet1_0_Weights, MobileNet_V2_Weights, AlexNet_Weights, VGG11_Weights
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-from asym_loss import ASLSingleLabel
+from .asym_loss import ASLSingleLabel
 
 # Define a simple CNN model
 class SimpleModel(nn.Module):

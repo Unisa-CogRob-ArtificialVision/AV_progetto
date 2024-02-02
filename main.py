@@ -8,7 +8,6 @@ import math
 import sys
 
 from DeepSort_yolov8 import Tracker
-
 #from yolov8_tracker import Tracker
 
 import torch
@@ -65,8 +64,8 @@ def read_config(config_path):
 
 def draw_bbox(img, bb, par_data, id):
     """Disegna il bounding box nell'immagine ed inserisce le informazioni di tracking (id) e i dati di PAR"""
-    x1, y1 = bb[0], bb[1]
-    x2, y2 = bb[2], bb[3]
+    x1, y1 = int(bb[0]), int(bb[1])
+    x2, y2 = int(bb[2]), int(bb[3])
     cv2.rectangle(img,(x1, y1), (x2, y2), (255, 255, 255))
     id_size = cv2.getTextSize('Person ' + str(id), cv2.FONT_HERSHEY_SIMPLEX, 0.4, 1)[0]
     cv2.putText(img, 'Person ' + str(id), (x1+1, y1 + id_size[1]), cv2.FONT_HERSHEY_SIMPLEX,0.4,(255, 0, 50), thickness=1)
@@ -88,7 +87,7 @@ def parse_par_pred(preds, color_labels, gender_labels, binary_labels):
 ###################################################################################################### read configs
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--video",default="C://Users//rosar//Desktop//test_video.mp4", type=str)
+parser.add_argument("--video",default="Example.mp4", type=str)
 parser.add_argument("--configuration",default="config.txt", type=str)
 parser.add_argument("--results",default="results.txt", type=str)
 parser.add_argument("--gpu", default=True, type=bool)
@@ -167,7 +166,7 @@ while img is not None:
     frame += 1
     updated_id = []
     ##### tracking -> outputs the bounding_boxes
-    if frame % skip_frame == 0:
+    if frame % skip_frame == 0 or frame >= frames:
         final_img = cv2.resize(img, (processing_width,processing_height)).copy()
         s = time()
         ### track   -> outputs the bounding box
@@ -179,87 +178,91 @@ while img is not None:
         for i,bb in enumerate(bbox):
 
             
-            id = int(bb[-1])
-            x1, y1, x2, y2 = bb[:-1]
+            id = int(bb[4])
+            x1, y1, x2, y2 = bb[:4]
 
             occupied_roi = bb_in_roi(bb,roi)
-            occupied_roi = 'roi1'
-            if occupied_roi is not None: 
-                h, w, _ = final_img.shape      
-                bb[1] = y1 = (y1-5 if y1-5 > 0 else y1)
-                bb[0] = x1 = (x1-5 if x1-5 > 0 else x1)
-                bb[3] = y2 = (y2+5 if y2+5 < w else y2)
-                bb[2] = x2 = (x2+5 if x2+5 < w else x2)
+            #occupied_roi = 'roi1'
+            #if occupied_roi is not None: 
+            h, w, _ = final_img.shape      
+            bb[1] = y1 = (int(y1-5) if y1-5 > 0 else int(y1))
+            bb[0] = x1 = (int(x1-5) if x1-5 > 0 else int(x1))
+            bb[3] = y2 = (int(y2+5) if y2+5 < w else int(y2))
+            bb[2] = x2 = (int(x2+5) if x2+5 < w else int(x2))
 
-                #print(x1,y1, x2,y2, h, w)
-                patch = par_transforms(Image.fromarray(final_img[y1:y2,x1:x2].copy())).unsqueeze(0).to(device)
-                 
-                pred_uc, pred_lc, pred_g, pred_b, pred_h = par_model.predict(patch)
-                par_data = parse_par_pred([pred_uc, pred_lc, pred_g, pred_b, pred_h], color_labels, gender_labels, binary_labels)
-                roi_data = {'roi': occupied_roi}
+            #print(x1,y1, x2,y2, h, w)
+            patch = par_transforms(Image.fromarray(final_img[y1:y2,x1:x2].copy())).unsqueeze(0).to(device)
                 
-                ### update json file
-                if id not in tracking_id.keys():
-                    tracking_id[id] = {}
-                    person = {'id':id}
-                    person.update({'roi1_passages':0, 'roi1_persistence_time':0,'roi2_passages':0, 'roi2_persistence_time':0})
-                    additional_info[id] = {'current_roi': None, 'frame_count_roi1': 0, 'frame_count_roi2': 0, 'index': None}
-                else:
-                    person = tracking_id[id]    # modificare con l'aggiunta di una scelta basata sulla media dei frame (per par)
-                
-                ## update par data info
-                if id not in count_struct.keys():
-                    count_struct[id] = {}
-                    for task in par_data.keys():
-                        count_struct[id][task] = {}
-                        label = task_label_pairs[task]
-                        for l in label:
-                            count_struct[id][task][l] = 0
-                    
+            pred_uc, pred_lc, pred_g, pred_b, pred_h = par_model.predict(patch)
+            par_data = parse_par_pred([pred_uc, pred_lc, pred_g, pred_b, pred_h], color_labels, gender_labels, binary_labels)
+            #roi_data = {'roi': occupied_roi}
+            
+            ### update json file
+            if id not in tracking_id.keys():
+                tracking_id[id] = {}
+                person = {'id':id}
+                person.update({'roi1_passages':0, 'roi1_persistence_time':0,'roi2_passages':0, 'roi2_persistence_time':0})
+                additional_info[id] = {'current_roi': None, 'frame_count_roi1': 0, 'frame_count_roi2': 0, 'index': None}
+            else:
+                person = tracking_id[id]    # modificare con l'aggiunta di una scelta basata sulla media dei frame (per par)
+            
+            ## update par data info
+            if id not in count_struct.keys():              
+                count_struct[id] = {}
                 for task in par_data.keys():
-                    count_struct[id][task][par_data[task]] += 1  
-
-                for task in count_struct[id]:
-                    max = -1
-                    for l in count_struct[id][task]:
-                        if count_struct[id][task][l] > max:
-                            max_label = l
-                            max = count_struct[id][task][l]
-                    par_data[task] = max_label
-                    
-                    
-                person.update(par_data)
-                ## update roi info
-                if occupied_roi == 'roi1':
-                    roi_passages = 'roi1_passages'
-                    roi_persistence_time = 'roi1_persistence_time'
-                    frame_count_roi = 'frame_count_roi1'
-                else:
-                    roi_passages = 'roi2_passages'
-                    roi_persistence_time = 'roi2_persistence_time'
-                    frame_count_roi = 'frame_count_roi2'
+                    count_struct[id][task] = {}
+                    label = task_label_pairs[task]
+                    for l in label:
+                        count_struct[id][task][l] = 0
                 
+            for task in par_data.keys():
+                count_struct[id][task][par_data[task]] += 1  
+
+            for task in count_struct[id]:
+                max = -1
+                for l in count_struct[id][task]:
+                    if count_struct[id][task][l] > max:
+                        max_label = l
+                        max = count_struct[id][task][l]
+                par_data[task] = max_label
+                
+                
+            person.update(par_data)
+            ## update roi info
+            if occupied_roi == 'roi1':
+                roi_passages = 'roi1_passages'
+                roi_persistence_time = 'roi1_persistence_time'
+                frame_count_roi = 'frame_count_roi1'
+            elif occupied_roi == 'roi2':
+                roi_passages = 'roi2_passages'
+                roi_persistence_time = 'roi2_persistence_time'
+                frame_count_roi = 'frame_count_roi2'
+
+            if occupied_roi is not None:            
                 if additional_info[id]['current_roi'] == None or occupied_roi != additional_info[id]['current_roi']:
                     additional_info[id]['current_roi'] = occupied_roi
                     person[roi_passages] += 1
 
                 additional_info[id][frame_count_roi] += 1
-                person[roi_persistence_time] = math.floor(additional_info[id][frame_count_roi]*skip_frame/fps)  # da cambiare con il conteggio dei secondi, questi sono soglo gli fps 
+                if frame >= frames:
+                    person[roi_persistence_time] = math.floor((((additional_info[id][frame_count_roi]-1)*skip_frame)+1)/fps)  # da cambiare con il conteggio dei secondi, questi sono soglo gli fps 
+                else:    
+                    person[roi_persistence_time] = math.floor(additional_info[id][frame_count_roi]*skip_frame/fps)  # da cambiare con il conteggio dei secondi, questi sono soglo gli fps 
                 
-                ## save changes for the next iteration
-                updated_id.append(id)
-                tracking_id[id] = person
+            ## save changes for the next iteration
+            updated_id.append(id)
+            tracking_id[id] = person
 
-                ## update results json
-                if additional_info[id]['index'] == None:
-                    additional_info[id]['index'] = len(results_json['people'])
-                    results_json['people'].append(person)
-                else:
-                    idx = additional_info[id]['index']
-                    results_json['people'][idx] = person                    
-                
+            ## update results json
+            if additional_info[id]['index'] == None:
+                additional_info[id]['index'] = len(results_json['people'])
+                results_json['people'].append(person)
+            else:
+                idx = additional_info[id]['index']
+                results_json['people'][idx] = person                    
+            
 
-                final_img = draw_bbox(final_img, bb, par_data, id)
+            final_img = draw_bbox(final_img, bb, par_data, id)
         final_img = insert_roi_sensors(final_img, roi)                         ##### DECOMMENTARE per inserire roi nell'immagine
         e = time() - s
         print('PAR time:',e)    
