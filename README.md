@@ -3,7 +3,7 @@
 <p> - ORA I MODELLI PER IL PAR SONO NELLA CARTELLA "PAR_models"!! </p>
 
 <p></p>
-<p></p>
+<p>File gdocs per relazione: https://docs.google.com/document/d/1-IrWYxdLIeTGUpyrlA43fwJQkQFXnTl-P0_7m-D1Q2Q/edit?usp=sharing</p>
 <p></p>
 
 <p>Models for pedestrian attribute recognition and tracking must be downloaded to execute.</p>
