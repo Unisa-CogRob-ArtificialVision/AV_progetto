@@ -9,32 +9,32 @@
          "upper_color": "black",
          "lower_color": "black",
          "gender": "male",
-         "bag": "false",
-         "hat": "false"
+         "bag": false,
+         "hat": false
       },
       {
          "id": 2,
-         "roi1_passages": 4,
+         "roi1_passages": 1,
          "roi1_persistence_time": 65,
          "roi2_passages": 1,
          "roi2_persistence_time": 4,
          "upper_color": "black",
          "lower_color": "blue",
          "gender": "female",
-         "bag": "true",
-         "hat": "true"
+         "bag": true,
+         "hat": true
       },
       {
          "id": 3,
-         "roi1_passages": 2,
+         "roi1_passages": 1,
          "roi1_persistence_time": 31,
          "roi2_passages": 0,
          "roi2_persistence_time": 0,
          "upper_color": "black",
          "lower_color": "black",
          "gender": "male",
-         "bag": "false",
-         "hat": "false"
+         "bag": false,
+         "hat": false
       },
       {
          "id": 5,
@@ -45,8 +45,8 @@
          "upper_color": "white",
          "lower_color": "black",
          "gender": "female",
-         "bag": "false",
-         "hat": "false"
+         "bag": false,
+         "hat": false
       },
       {
          "id": 7,
@@ -57,8 +57,8 @@
          "upper_color": "blue",
          "lower_color": "black",
          "gender": "female",
-         "bag": "false",
-         "hat": "true"
+         "bag": false,
+         "hat": true
       },
       {
          "id": 11,
@@ -69,8 +69,8 @@
          "upper_color": "black",
          "lower_color": "gray",
          "gender": "male",
-         "bag": "false",
-         "hat": "false"
+         "bag": false,
+         "hat": false
       },
       {
          "id": 12,
@@ -81,8 +81,8 @@
          "upper_color": "black",
          "lower_color": "black",
          "gender": "male",
-         "bag": "false",
-         "hat": "false"
+         "bag": false,
+         "hat": false
       },
       {
          "id": 13,
@@ -91,10 +91,10 @@
          "roi2_passages": 0,
          "roi2_persistence_time": 0,
          "upper_color": "black",
-         "lower_color": "gray",
+         "lower_color": "blue",
          "gender": "female",
-         "bag": "false",
-         "hat": "false"
+         "bag": false,
+         "hat": false
       },
       {
          "id": 14,
@@ -104,9 +104,9 @@
          "roi2_persistence_time": 0,
          "upper_color": "black",
          "lower_color": "black",
-         "gender": "male",
-         "bag": "true",
-         "hat": "false"
+         "gender": "female",
+         "bag": true,
+         "hat": false
       },
       {
          "id": 15,
@@ -116,9 +116,9 @@
          "roi2_persistence_time": 0,
          "upper_color": "black",
          "lower_color": "black",
-         "gender": "male",
-         "bag": "false",
-         "hat": "false"
+         "gender": "female",
+         "bag": false,
+         "hat": false
       },
       {
          "id": 17,
@@ -129,8 +129,8 @@
          "upper_color": "black",
          "lower_color": "black",
          "gender": "male",
-         "bag": "true",
-         "hat": "false"
+         "bag": true,
+         "hat": true
       },
       {
          "id": 18,
@@ -141,8 +141,8 @@
          "upper_color": "black",
          "lower_color": "yellow",
          "gender": "female",
-         "bag": "false",
-         "hat": "false"
+         "bag": false,
+         "hat": false
       },
       {
          "id": 19,
@@ -153,8 +153,8 @@
          "upper_color": "white",
          "lower_color": "black",
          "gender": "male",
-         "bag": "false",
-         "hat": "false"
+         "bag": false,
+         "hat": false
       },
       {
          "id": 20,
@@ -165,8 +165,8 @@
          "upper_color": "black",
          "lower_color": "yellow",
          "gender": "male",
-         "bag": "false",
-         "hat": "true"
+         "bag": false,
+         "hat": true
       },
       {
          "id": 21,
@@ -177,8 +177,8 @@
          "upper_color": "black",
          "lower_color": "gray",
          "gender": "female",
-         "bag": "false",
-         "hat": "false"
+         "bag": false,
+         "hat": false
       }
    ]
 }

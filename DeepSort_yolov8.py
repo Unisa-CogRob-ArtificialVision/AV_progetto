@@ -16,14 +16,14 @@ class Tracker():
         cfg = get_config()
         cfg.merge_from_file("deep_sort/configs/deep_sort.yaml")
         print('CONFIG DEEPSORT: ', cfg.DEEPSORT)
-        self.strongsort = StrongSORT(model_weights='osnet_ain_x1_0_msmt17.pt',
-                            device='cuda',max_dist=cfg.DEEPSORT.MAX_DIST,
-                            #min_confidence=cfg.DEEPSORT.MIN_CONFIDENCE,
-                            #nms_max_overlap=cfg.DEEPSORT.NMS_MAX_OVERLAP, 
-                            max_iou_distance=cfg.DEEPSORT.MAX_IOU_DISTANCE,
-                            max_age=cfg.DEEPSORT.MAX_AGE, 
-                            n_init=cfg.DEEPSORT.N_INIT, 
-                            nn_budget=cfg.DEEPSORT.NN_BUDGET)
+        # self.strongsort = StrongSORT(model_weights='osnet_ain_x1_0_msmt17.pt',
+        #                     device='cuda',max_dist=cfg.DEEPSORT.MAX_DIST,
+        #                     #min_confidence=cfg.DEEPSORT.MIN_CONFIDENCE,
+        #                     #nms_max_overlap=cfg.DEEPSORT.NMS_MAX_OVERLAP, 
+        #                     max_iou_distance=cfg.DEEPSORT.MAX_IOU_DISTANCE,
+        #                     max_age=cfg.DEEPSORT.MAX_AGE, 
+        #                     n_init=cfg.DEEPSORT.N_INIT, 
+        #                     nn_budget=cfg.DEEPSORT.NN_BUDGET)
         self.deepsort = DeepSort(cfg.DEEPSORT.REID_CKPT,
                             max_dist=cfg.DEEPSORT.MAX_DIST,
                             min_confidence=cfg.DEEPSORT.MIN_CONFIDENCE,

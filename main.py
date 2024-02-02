@@ -19,7 +19,7 @@ from PAR.par_model import PARModel
 ###################################################################################################### utility functions
 def insert_roi_sensors(img, roi):
     """Inserisce nell'immagine un rettangolo che rappresenta la roi"""
-    for r in roi.keys():
+    for i,r in enumerate(roi.keys()):
         x = roi[r]['x']
         y = roi[r]['y']
         width = roi[r]['width']
@@ -27,7 +27,9 @@ def insert_roi_sensors(img, roi):
         h, w, _ = img.shape
         x1, y1 = int(x), int(y)
         x2, y2 = int(width + x1), int(height + y1)
-        cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 0)) ## inserire colore nero
+        id_size = cv2.getTextSize(str(i+1), cv2.FONT_HERSHEY_SIMPLEX, 1, 1)[0]
+        cv2.putText(img, str(i+1), (x1+5, y1+5 + id_size[1]), cv2.FONT_HERSHEY_SIMPLEX,1,(0,0,0), thickness=2)    
+        cv2.rectangle(img, (x1, y1), (x2, y2), (0, 0, 0), thickness=2) ## inserire colore nero
     return img
 
 ##### convenzione bb -> [x1, y1, x2, y2]    (x1,y1) coordinate angolo superiore sinistro, (x2,y2) coordinate angolo inferiore destro
@@ -62,16 +64,24 @@ def read_config(config_path):
         return data
 
 
-def draw_bbox(img, bb, par_data, id):
+def draw_bbox(img, bb, par_data, id, color):
     """Disegna il bounding box nell'immagine ed inserisce le informazioni di tracking (id) e i dati di PAR"""
     x1, y1 = int(bb[0]), int(bb[1])
     x2, y2 = int(bb[2]), int(bb[3])
-    cv2.rectangle(img,(x1, y1), (x2, y2), (255, 255, 255))
-    id_size = cv2.getTextSize('Person ' + str(id), cv2.FONT_HERSHEY_SIMPLEX, 0.4, 1)[0]
-    cv2.putText(img, 'Person ' + str(id), (x1+1, y1 + id_size[1]), cv2.FONT_HERSHEY_SIMPLEX,0.4,(255, 0, 50), thickness=1)
+    cv2.rectangle(img,(x1, y1), (x2, y2), color, thickness=2)
+    id_size = cv2.getTextSize(str(id), cv2.FONT_HERSHEY_SIMPLEX, 1, 1)[0]
+    cv2.rectangle(img, (x1+3,y1+3),(x1 + id_size[0]+3, y1 + id_size[1]+6), (255,255,255), thickness=-1)
+    cv2.putText(img,str(id), (x1+3, y1+3 + id_size[1]), cv2.FONT_HERSHEY_SIMPLEX,1,color, thickness=1)
+    #txt = ""
+    tot_size_x = 115
+    tot_size_y = 70
+    cv2.rectangle(img, (x1+1,y2+5),(x1+6+tot_size_x,y2 + tot_size_y), (255,255,255),thickness=-1)
     for i,attr in enumerate(par_data.keys()):
-        txt_size = cv2.getTextSize(attr+": "+par_data[attr], cv2.FONT_HERSHEY_SIMPLEX, 0.4, 1)[0]
-        cv2.putText(img, attr+": "+par_data[attr], (x1+1, y2+((i+1)*10) + txt_size[1]), cv2.FONT_HERSHEY_SIMPLEX,0.4,(255, 0, 50), thickness=1)
+        #txt += attr +": "+ par_data[attr]
+        txt_size = cv2.getTextSize(attr+": "+str(par_data[attr]), cv2.FONT_HERSHEY_SIMPLEX, 0.4, 1)[0]
+        # tot_size_x = (txt_size[0] if txt_size[0] > tot_size_x else tot_size_x)
+        # tot_size_y += txt_size[1]
+        cv2.putText(img, attr+": "+str(par_data[attr]), (x1+3, y2+((i+1)*10) + txt_size[1]), cv2.FONT_HERSHEY_SIMPLEX,0.4,(0, 0, 0), thickness=1)
     return img
 
 def parse_par_pred(preds, color_labels, gender_labels, binary_labels):
@@ -125,7 +135,7 @@ models_path = {'uc_model':'PAR/PAR_models/best_model_uc_alexnet_batch_mod_asym_m
     
 color_labels = ['black', 'blue', 'brown', 'gray', 'green', 'orange', 'pink', 'purple', 'red', 'white','yellow']
 gender_labels = ['male','female']
-binary_labels = ['false', 'true']
+binary_labels = [False, True]
 task_label_pairs = {'upper_color': color_labels,
          'lower_color': color_labels,
          'gender': gender_labels,
@@ -147,7 +157,10 @@ tracking_id = {}                # contiene le persone tracciate dall'algoritmo (
 results_json = {"people": []}   # conitene l'output file
 additional_info = {}            # contiene informazioni aggiuntive sulle persone tracciate
 count_struct = {}               # contiene per ogni label quante volte è stata classificata come tale, per ogni id
-
+gui_upper_left = {'People in ROI': 0,
+                  'Total persons': 0,
+                  'Passages in ROI 1': 0,
+                  'Passages in ROI 2': 0}
 
 _, img = cap.read()
 if img is None:
@@ -174,6 +187,9 @@ while img is not None:
         e = time() - s
         print('TRACK time:',e)
         
+        
+        gui_upper_left['People in ROI'] = 0
+        gui_upper_left['Total persons'] = len(bbox)
         s = time()
         for i,bb in enumerate(bbox):
 
@@ -182,6 +198,10 @@ while img is not None:
             x1, y1, x2, y2 = bb[:4]
 
             occupied_roi = bb_in_roi(bb,roi)
+            if occupied_roi is not None:
+                gui_upper_left['People in ROI'] += 1
+            if occupied_roi is None:
+                ouccpied_roi = 'outside_roi'
             #occupied_roi = 'roi1'
             #if occupied_roi is not None: 
             h, w, _ = final_img.shape      
@@ -202,7 +222,7 @@ while img is not None:
                 tracking_id[id] = {}
                 person = {'id':id}
                 person.update({'roi1_passages':0, 'roi1_persistence_time':0,'roi2_passages':0, 'roi2_persistence_time':0})
-                additional_info[id] = {'current_roi': None, 'frame_count_roi1': 0, 'frame_count_roi2': 0, 'index': None}
+                additional_info[id] = {'current_roi': None, 'frame_count_roi1': 0, 'frame_count_roi2': 0, 'index': None, 'last_seen': None}
             else:
                 person = tracking_id[id]    # modificare con l'aggiunta di una scelta basata sulla media dei frame (per par)
             
@@ -233,15 +253,33 @@ while img is not None:
                 roi_passages = 'roi1_passages'
                 roi_persistence_time = 'roi1_persistence_time'
                 frame_count_roi = 'frame_count_roi1'
+                gul_roi = 'Passages in ROI 1'
             elif occupied_roi == 'roi2':
                 roi_passages = 'roi2_passages'
                 roi_persistence_time = 'roi2_persistence_time'
                 frame_count_roi = 'frame_count_roi2'
+                gul_roi = 'Passages in ROI 2'
+
+            # if id == 2 and additional_info[id]['current_roi'] == None:
+
+
 
             if occupied_roi is not None:            
-                if additional_info[id]['current_roi'] == None or occupied_roi != additional_info[id]['current_roi']:
+                ## versione attuale, se la persona esce dalla roi e la roi si trova proprio al limite dell'immagine, se poi la stessa persona dovesse rientrare nella stessa roi (con lo stesso id), non verrebbe contato come nuovo passaggio
+                if (additional_info[id]['current_roi'] == None and occupied_roi != additional_info[id]['last_seen']) or (additional_info[id]['current_roi'] is not None and additional_info[id]['current_roi'] != occupied_roi):
+                    if occupied_roi != 'outside_roi':
+                        person[roi_passages] += 1
+                        gui_upper_left[gul_roi] += 1
+                    additional_info[id]['last_seen'] = occupied_roi
                     additional_info[id]['current_roi'] = occupied_roi
-                    person[roi_passages] += 1
+                
+                
+                ## versione originale, se la persona scopare per un solo frame mentre è all'interno di una roi, appena ricompare (il frame successivo) viene contato come nuovo passaggio nella roi
+                # if additional_info[id]['current_roi'] == None  or additional_info[id]['current_roi'] != occupied_roi:
+                #     if occupied_roi != 'outside_roi':
+                #         person[roi_passages] += 1
+                #     additional_info[id]['last_seen'] = occupied_roi
+                
 
                 additional_info[id][frame_count_roi] += 1
                 if frame >= frames:
@@ -261,15 +299,25 @@ while img is not None:
                 idx = additional_info[id]['index']
                 results_json['people'][idx] = person                    
             
+            if occupied_roi == 'roi1':
+                color = (255, 0, 0)
+            elif occupied_roi == 'roi2':
+                color = (0, 255, 0)
+            else: 
+                color = (0, 0, 255)
 
-            final_img = draw_bbox(final_img, bb, par_data, id)
+            final_img = draw_bbox(final_img, bb, par_data, id, color)
         final_img = insert_roi_sensors(final_img, roi)                         ##### DECOMMENTARE per inserire roi nell'immagine
         e = time() - s
         print('PAR time:',e)    
         for id in additional_info.keys():
             if id not in updated_id:
                 additional_info[id]['current_roi'] = None
-
+        ## insert general info upper left
+        cv2.rectangle(final_img, (0,1), (252,100), (255, 255, 255), thickness=-1)
+        for i,k in enumerate(gui_upper_left.keys()):
+            txt_size = cv2.getTextSize(k+": "+str(gui_upper_left[k]), cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2)[0]
+            cv2.putText(final_img, k+": "+str(gui_upper_left[k]), (3, i*20 + 25),cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0,0,0),thickness=2)
         cv2.imshow('test_roi',final_img)
         cv2.waitKey(1)
     _, img = cap.read()
