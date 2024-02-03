@@ -64,7 +64,7 @@ def read_config(config_path):
         return data
 
 
-def draw_bbox(img, bb, par_data, id, color):
+def draw_bbox(img, bb, par_data, id, color, par=True):
     """Disegna il bounding box nell'immagine ed inserisce le informazioni di tracking (id) e i dati di PAR"""
     x1, y1 = int(bb[0]), int(bb[1])
     x2, y2 = int(bb[2]), int(bb[3])
@@ -72,16 +72,17 @@ def draw_bbox(img, bb, par_data, id, color):
     id_size = cv2.getTextSize(str(id), cv2.FONT_HERSHEY_SIMPLEX, 1, 1)[0]
     cv2.rectangle(img, (x1+3,y1+3),(x1 + id_size[0]+3, y1 + id_size[1]+6), (255,255,255), thickness=-1)
     cv2.putText(img,str(id), (x1+3, y1+3 + id_size[1]), cv2.FONT_HERSHEY_SIMPLEX,1,color, thickness=1)
-    #txt = ""
-    tot_size_x = 115
-    tot_size_y = 70
-    cv2.rectangle(img, (x1+1,y2+5),(x1+6+tot_size_x,y2 + tot_size_y), (255,255,255),thickness=-1)
-    for i,attr in enumerate(par_data.keys()):
-        #txt += attr +": "+ par_data[attr]
-        txt_size = cv2.getTextSize(attr+": "+str(par_data[attr]), cv2.FONT_HERSHEY_SIMPLEX, 0.4, 1)[0]
-        # tot_size_x = (txt_size[0] if txt_size[0] > tot_size_x else tot_size_x)
-        # tot_size_y += txt_size[1]
-        cv2.putText(img, attr+": "+str(par_data[attr]), (x1+3, y2+((i+1)*10) + txt_size[1]), cv2.FONT_HERSHEY_SIMPLEX,0.4,(0, 0, 0), thickness=1)
+    if par:
+        #txt = ""
+        tot_size_x = 115
+        tot_size_y = 70
+        cv2.rectangle(img, (x1+1,y2+5),(x1+6+tot_size_x,y2 + tot_size_y), (255,255,255),thickness=-1)
+        for i,attr in enumerate(par_data.keys()):
+            #txt += attr +": "+ par_data[attr]
+            txt_size = cv2.getTextSize(attr+": "+str(par_data[attr]), cv2.FONT_HERSHEY_SIMPLEX, 0.4, 1)[0]
+            # tot_size_x = (txt_size[0] if txt_size[0] > tot_size_x else tot_size_x)
+            # tot_size_y += txt_size[1]
+            cv2.putText(img, attr+": "+str(par_data[attr]), (x1+3, y2+((i+1)*10) + txt_size[1]), cv2.FONT_HERSHEY_SIMPLEX,0.4,(0, 0, 0), thickness=1)
     return img
 
 def parse_par_pred(preds, color_labels, gender_labels, binary_labels):
@@ -97,7 +98,7 @@ def parse_par_pred(preds, color_labels, gender_labels, binary_labels):
 ###################################################################################################### read configs
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--video",default="Example.mp4", type=str)
+parser.add_argument("--video",default="test2.mp4", type=str)
 parser.add_argument("--configuration",default="config.txt", type=str)
 parser.add_argument("--results",default="results.txt", type=str)
 parser.add_argument("--gpu", default=True, type=bool)
@@ -124,7 +125,7 @@ for r in roi.keys():
     roi[r]['width'] *= processing_width
     roi[r]['height'] *= processing_height
 ###################################################################################################### load tracker/detector
-tracker = Tracker(gpu=GPU)    # instantiate Tracker
+tracker = Tracker(gpu=GPU, shape=(processing_width,processing_height))    # instantiate Tracker
 
 ###################################################################################################### load par model
 models_path = {'uc_model':'PAR/PAR_models/best_model_uc_alexnet_batch_mod_asym_mod_MIGLIORE.pth',
@@ -201,16 +202,18 @@ while img is not None:
             if occupied_roi is not None:
                 gui_upper_left['People in ROI'] += 1
             if occupied_roi is None:
-                ouccpied_roi = 'outside_roi'
+                occupied_roi = 'outside_roi'
             #occupied_roi = 'roi1'
             #if occupied_roi is not None: 
             h, w, _ = final_img.shape      
-            bb[1] = y1 = (int(y1-5) if y1-5 > 0 else int(y1))
-            bb[0] = x1 = (int(x1-5) if x1-5 > 0 else int(x1))
-            bb[3] = y2 = (int(y2+5) if y2+5 < w else int(y2))
-            bb[2] = x2 = (int(x2+5) if x2+5 < w else int(x2))
+            # bb[1] = y1 = (int(y1-5) if y1-5 > 0 else int(y1))
+            # bb[0] = x1 = (int(x1-5) if x1-5 > 0 else int(x1))
+            # bb[3] = y2 = (int(y2+5) if y2+5 < w else int(y2))
+            # bb[2] = x2 = (int(x2+5) if x2+5 < w else int(x2))
 
             #print(x1,y1, x2,y2, h, w)
+            if x2 <= x1 or y2 <= y1:
+                continue
             patch = par_transforms(Image.fromarray(final_img[y1:y2,x1:x2].copy())).unsqueeze(0).to(device)
                 
             pred_uc, pred_lc, pred_g, pred_b, pred_h = par_model.predict(patch)
@@ -263,10 +266,12 @@ while img is not None:
             # if id == 2 and additional_info[id]['current_roi'] == None:
 
 
-
+            print(id, occupied_roi)
             if occupied_roi is not None:            
                 ## versione attuale, se la persona esce dalla roi e la roi si trova proprio al limite dell'immagine, se poi la stessa persona dovesse rientrare nella stessa roi (con lo stesso id), non verrebbe contato come nuovo passaggio
                 if (additional_info[id]['current_roi'] == None and occupied_roi != additional_info[id]['last_seen']) or (additional_info[id]['current_roi'] is not None and additional_info[id]['current_roi'] != occupied_roi):
+                    if additional_info[id]['last_seen'] == 'outside_roi':
+                        print(id, occupied_roi, additional_info[id]['last_seen'])
                     if occupied_roi != 'outside_roi':
                         person[roi_passages] += 1
                         gui_upper_left[gul_roi] += 1
@@ -280,12 +285,12 @@ while img is not None:
                 #         person[roi_passages] += 1
                 #     additional_info[id]['last_seen'] = occupied_roi
                 
-
-                additional_info[id][frame_count_roi] += 1
-                if frame >= frames:
-                    person[roi_persistence_time] = math.floor((((additional_info[id][frame_count_roi]-1)*skip_frame)+1)/fps)  # da cambiare con il conteggio dei secondi, questi sono soglo gli fps 
-                else:    
-                    person[roi_persistence_time] = math.floor(additional_info[id][frame_count_roi]*skip_frame/fps)  # da cambiare con il conteggio dei secondi, questi sono soglo gli fps 
+                if occupied_roi not in ['outside_roi', None]:
+                    additional_info[id][frame_count_roi] += 1
+                    if frame >= frames:
+                        person[roi_persistence_time] = math.floor((((additional_info[id][frame_count_roi]-1)*skip_frame)+1)/fps)  # da cambiare con il conteggio dei secondi, questi sono soglo gli fps 
+                    else:    
+                        person[roi_persistence_time] = math.floor(additional_info[id][frame_count_roi]*skip_frame/fps)  # da cambiare con il conteggio dei secondi, questi sono soglo gli fps 
                 
             ## save changes for the next iteration
             updated_id.append(id)
@@ -306,7 +311,7 @@ while img is not None:
             else: 
                 color = (0, 0, 255)
 
-            final_img = draw_bbox(final_img, bb, par_data, id, color)
+            final_img = draw_bbox(final_img, bb, par_data, id, color, par=False)
         final_img = insert_roi_sensors(final_img, roi)                         ##### DECOMMENTARE per inserire roi nell'immagine
         e = time() - s
         print('PAR time:',e)    

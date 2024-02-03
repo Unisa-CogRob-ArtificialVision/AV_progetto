@@ -83,6 +83,8 @@ class KalmanFilter(object):
             1e-5,
             10 * self._std_weight_velocity * measurement[3]]
         covariance = np.diag(np.square(std))
+        mean[2] *= 0.55
+        mean[6] *= 1.1
         return mean, covariance
 
     def predict(self, mean, covariance):
@@ -119,7 +121,9 @@ class KalmanFilter(object):
         mean = np.dot(self._motion_mat, mean)
         covariance = np.linalg.multi_dot((
             self._motion_mat, covariance, self._motion_mat.T)) + motion_cov
+        #mean[2] *= 0.99
 
+         
         return mean, covariance
 
     def project(self, mean, covariance):
@@ -178,6 +182,7 @@ class KalmanFilter(object):
         kalman_gain = scipy.linalg.cho_solve(
             (chol_factor, lower), np.dot(covariance, self._update_mat.T).T,
             check_finite=False).T
+        
         innovation = measurement - projected_mean
 
         new_mean = mean + np.dot(innovation, kalman_gain.T)

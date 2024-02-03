@@ -11,7 +11,7 @@ from strong_sort import StrongSORT
 
 
 class Tracker():
-    def __init__(self, filter_class=None, model='yolox-s', ckpt='yolox_s.pth', gpu=True):
+    def __init__(self, filter_class=None, model='yolox-s', ckpt='yolox_s.pth', gpu=True, shape=None):
         self.detector =  YOLO('DETECTOR_models/yolov8l.pt') # load yolov8 detector from ultralytics
         cfg = get_config()
         cfg.merge_from_file("deep_sort/configs/deep_sort.yaml")
@@ -32,7 +32,7 @@ class Tracker():
                             max_age=cfg.DEEPSORT.MAX_AGE, 
                             n_init=cfg.DEEPSORT.N_INIT, 
                             nn_budget=cfg.DEEPSORT.NN_BUDGET,
-                            use_cuda=gpu)
+                            use_cuda=gpu, shape=shape)
         self.filter_class = filter_class
 
     def update(self, image):
@@ -45,7 +45,7 @@ class Tracker():
             for i,box in enumerate(boxes):
                 x1, y1, w, h = int(box[0].item()), int(box[1].item()), int(box[2].item()), int(box[3].item())
                 #print(h)
-                if h < 100:
+                if h < 80:
                     continue
                 scores.append(results[0].boxes.conf[i])
                 bbox.append([x1,y1,w,h])

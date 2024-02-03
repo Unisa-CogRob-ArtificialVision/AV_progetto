@@ -37,7 +37,7 @@ class Tracker:
 
     """
 
-    def __init__(self, metric, max_iou_distance=0.7, max_age=70, n_init=3):
+    def __init__(self, metric, max_iou_distance=0.7, max_age=70, n_init=3, shape=None):
         self.metric = metric
         self.max_iou_distance = max_iou_distance
         self.max_age = max_age
@@ -46,6 +46,7 @@ class Tracker:
         self.kf = kalman_filter.KalmanFilter()
         self.tracks = []
         self._next_id = 1
+        self.shape = shape
 
     def predict(self):
         """Propagate track state distributions one time step forward.
@@ -107,25 +108,37 @@ class Tracker:
             i for i, t in enumerate(self.tracks) if t.is_confirmed()]
         unconfirmed_tracks = [
             i for i, t in enumerate(self.tracks) if not t.is_confirmed()]
+        
+        # for t in self.tracks:
+        #     if t.track_id == 17:
+        #         print('yes')
 
-        # Associate confirmed tracks using appearance features.
+        # for i in unconfirmed_tracks:
+        #     if self.tracks[i].is_tentative:
+        #         self.tracks[i].features = []
+                
+        # Associate confirmed tracks using appearance features. 
         matches_a, unmatched_tracks_a, unmatched_detections = \
             linear_assignment.matching_cascade(
                 gated_metric, self.metric.matching_threshold, self.max_age,
                 self.tracks, detections, confirmed_tracks)
+        
+        # for t in self.tracks:
+        #     if t.track_id == 17:
+        #         print('yes')
 
         # Associate remaining tracks together with unconfirmed tracks using IOU.
-        iou_track_candidates = unconfirmed_tracks + [
+        iou_track_candidates =  [
             k for k in unmatched_tracks_a if
-            self.tracks[k].time_since_update == 1]
+            self.tracks[k].time_since_update == 1] + unconfirmed_tracks           # time_since_update == numero di frame dall'ultima volta che la traccia è stat a aggiornata. (Teoricamente se questo numero è maggiore di max_age la traccia deve essere eliminata)
         unmatched_tracks_a = [
             k for k in unmatched_tracks_a if
             self.tracks[k].time_since_update != 1]
         matches_b, unmatched_tracks_b, unmatched_detections = \
             linear_assignment.min_cost_matching(
                 iou_matching.iou_cost, self.max_iou_distance, self.tracks,
-                detections, iou_track_candidates, unmatched_detections)
-
+                detections, iou_track_candidates, unmatched_detections)         # l'iou cost è calcolato come la sovrapposizione fra le detection che arrivano dal detector ed i bounding box predetti dallo step predict() 
+        
         matches = matches_a + matches_b
         unmatched_tracks = list(set(unmatched_tracks_a + unmatched_tracks_b))
         return matches, unmatched_tracks, unmatched_detections

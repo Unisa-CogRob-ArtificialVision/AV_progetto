@@ -19,17 +19,17 @@ class DeepSort(object):
                  max_iou_distance=0.7, 
                  max_age=70, n_init=3, 
                  nn_budget=100, 
-                 use_cuda=True):
+                 use_cuda=True, shape=None):
         self.min_confidence = min_confidence
         self.nms_max_overlap = nms_max_overlap
         self.frame = 0
         self.det = []
         self.extractor = Extractor(model_path, use_cuda=use_cuda)
-
+        self.shape = shape
         max_cosine_distance = max_dist
         #nn_budget = 100
         metric = NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
-        self.tracker = Tracker(metric, max_iou_distance=max_iou_distance, max_age=max_age, n_init=n_init)
+        self.tracker = Tracker(metric, max_iou_distance=max_iou_distance, max_age=max_age, n_init=n_init, shape=shape)
 
     def update(self, bbox_xywh, confidences, ori_img, detections = None):
         if detections is None:
@@ -53,17 +53,18 @@ class DeepSort(object):
 
 
         # update tracker
-        self.tracker.predict()      # usa il filtro di kalman sulle tracce
-        self.tracker.update(detections) # aggiorna lo stato del tracker
+        self.tracker.predict()      # usa il filtro di kalman sulle tracce per predirre la "posizione" delle tracce
+        self.tracker.update(detections) # aggiorna lo stato del tracker usando le detection e la predizione effettuata allo step precedente
 
         # output bbox identities
         outputs = []
         for track in self.tracker.tracks:
-            if not track.is_confirmed() or track.time_since_update > 1:
+            if not track.is_confirmed() or track.time_since_update > 1:       #### DECOMMENTAREEEEE
                 continue
             box = track.to_tlwh()
             x1,y1,x2,y2 = self._tlwh_to_xyxy(box)
             track_id = track.track_id
+           
             outputs.append(np.array([x1,y1,x2,y2,track_id], dtype=np.int32))
         if len(outputs) > 0:
             outputs = np.stack(outputs,axis=0)
