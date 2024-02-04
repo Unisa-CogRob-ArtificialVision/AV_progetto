@@ -9,3 +9,5 @@ Per addestrare chiamare il modulo "par_train_custom.py"
 Per far partire il test del timing dei vari modelli eseguire "par_time_test.py"
 
 par_model.py serve per costruire il modello per effettuare il PAR. Viene usato nello script principale "group09.py"
+
+- CBAM_net.py, CBAM2.py, par_train_custom_CBAM.py NON sono utilizzati, sono script che contengono le varie prove effettuate per il PAR.
