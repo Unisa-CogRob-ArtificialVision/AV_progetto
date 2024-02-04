@@ -7,7 +7,7 @@ from deep_sort.deep_sort import DeepSort
 import torch
 import cv2
 from utils.visualize import vis_track
-from strong_sort import StrongSORT
+# from strong_sort import StrongSORT
 
 
 class Tracker():

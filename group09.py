@@ -64,7 +64,7 @@ def read_config(config_path):
         return data
 
 
-def draw_bbox(img, bb, par_data, id, color, par=True):
+def draw_bbox(img, bb, par_data, id, color, show_par=True):
     """Disegna il bounding box nell'immagine ed inserisce le informazioni di tracking (id) e i dati di PAR"""
     x1, y1 = int(bb[0]), int(bb[1])
     x2, y2 = int(bb[2]), int(bb[3])
@@ -72,7 +72,7 @@ def draw_bbox(img, bb, par_data, id, color, par=True):
     id_size = cv2.getTextSize(str(id), cv2.FONT_HERSHEY_SIMPLEX, 1, 1)[0]
     cv2.rectangle(img, (x1+3,y1+3),(x1 + id_size[0]+3, y1 + id_size[1]+6), (255,255,255), thickness=-1)
     cv2.putText(img,str(id), (x1+3, y1+3 + id_size[1]), cv2.FONT_HERSHEY_SIMPLEX,1,color, thickness=1)
-    if par:
+    if show_par:
         #txt = ""
         tot_size_x = 115
         tot_size_y = 70
@@ -98,7 +98,7 @@ def parse_par_pred(preds, color_labels, gender_labels, binary_labels):
 ###################################################################################################### read configs
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--video",default="test2.mp4", type=str)
+parser.add_argument("--video",default="Example.mp4", type=str)
 parser.add_argument("--configuration",default="config.txt", type=str)
 parser.add_argument("--results",default="results.txt", type=str)
 parser.add_argument("--gpu", default=True, type=bool)
@@ -311,7 +311,7 @@ while img is not None:
             else: 
                 color = (0, 0, 255)
 
-            final_img = draw_bbox(final_img, bb, par_data, id, color, par=False)
+            final_img = draw_bbox(final_img, bb, par_data, id, color, show_par=True)
         final_img = insert_roi_sensors(final_img, roi)                         ##### DECOMMENTARE per inserire roi nell'immagine
         e = time() - s
         print('PAR time:',e)    

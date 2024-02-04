@@ -10,10 +10,10 @@ def parse_args():
     parser = argparse.ArgumentParser(description="MOTChallenge evaluation")
     parser.add_argument(
         "--mot_dir", help="Path to MOTChallenge directory (train or test)",
-        required=True, default="./MOT16/train/")
+        default="./MOT16/train/")
     parser.add_argument(
-        "--detection_dir", help="Path to detections.", default="detections",
-        required=True, default="./resources/detections/MOT16_POI_train")
+        "--detection_dir", help="Path to detections.",
+        default="./resources/detections/MOT16_POI_train")
     parser.add_argument(
         "--output_dir", help="Folder in which the results will be stored. Will "
         "be created if it does not exist.", default="./TRACKER_TEST/TEST_ROOT")
