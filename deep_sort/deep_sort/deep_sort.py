@@ -1,17 +1,21 @@
+################################################################### IMPORTS #################################################################################
+
 import numpy as np
 import torch
-import pickle
 from .deep.feature_extractor import Extractor
 from .sort.nn_matching import NearestNeighborDistanceMetric
 from .sort.preprocessing import non_max_suppression
 from .sort.detection import Detection
 from .sort.tracker import Tracker
 
+#############################################################################################################################################################
+
 
 __all__ = ['DeepSort']
 
 
 class DeepSort(object):
+    
     def __init__(self, model_path, 
                  max_dist=0.2, 
                  min_confidence=0.3, 
@@ -20,6 +24,7 @@ class DeepSort(object):
                  max_age=70, n_init=3, 
                  nn_budget=100, 
                  use_cuda=True, shape=None):
+        
         self.min_confidence = min_confidence
         self.nms_max_overlap = nms_max_overlap
         self.frame = 0
@@ -27,23 +32,23 @@ class DeepSort(object):
         self.extractor = Extractor(model_path, use_cuda=use_cuda)
         self.shape = shape
         max_cosine_distance = max_dist
-        #nn_budget = 100
         metric = NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
         self.tracker = Tracker(metric, max_iou_distance=max_iou_distance, max_age=max_age, n_init=n_init, shape=shape)
 
     def update(self, bbox_xywh, confidences, ori_img, detections = None):
+
         if detections is None:
             self.height, self.width = ori_img.shape[:2]
 
-        # generate detections
+            # GENERAZIONE DELLE DETECTION
             features = self._get_features(bbox_xywh, ori_img)
             bbox_tlwh = self._xywh_to_tlwh(bbox_xywh)
             detections = [Detection(bbox_tlwh[i], conf, features[i]) for i,conf in enumerate(confidences) if conf>self.min_confidence]
             
-            ## salvare detections per testing (qui)
-            for d in detections:
-                self.det.append([d,self.frame])
-            self.frame +=1
+            # SALVA DETECTION PER TESTING
+            # for d in detections:
+            #     self.det.append([d,self.frame])
+            # self.frame +=1
 
         # run on non-maximum supression
         boxes = np.array([d.tlwh for d in detections])
@@ -51,15 +56,17 @@ class DeepSort(object):
         indices = non_max_suppression(boxes, self.nms_max_overlap, scores)
         detections = [detections[i] for i in indices]
 
-
         # update tracker
-        self.tracker.predict()      # usa il filtro di kalman sulle tracce per predirre la "posizione" delle tracce
-        self.tracker.update(detections) # aggiorna lo stato del tracker usando le detection e la predizione effettuata allo step precedente
+        # USA IL FILTRO DI KALMAN SULLE TRACCE PER PREDIRRE LA "POSIZIONE" DELLE TRACCE
+        self.tracker.predict()   
+
+        # AGGIORNA LO STATO DEL TRACKER USANDO LE DETECTION E LA PREVISIONE EFFETTUATA ALLO STEP PRECEDENTE
+        self.tracker.update(detections) 
 
         # output bbox identities
         outputs = []
         for track in self.tracker.tracks:
-            if not track.is_confirmed() or track.time_since_update > 1:       #### DECOMMENTAREEEEE
+            if not track.is_confirmed() or track.time_since_update > 1:       
                 continue
             box = track.to_tlwh()
             x1,y1,x2,y2 = self._tlwh_to_xyxy(box)

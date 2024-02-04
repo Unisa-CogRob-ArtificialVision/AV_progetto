@@ -176,9 +176,6 @@ def run(sequence_dir, detection_file, output_file, min_confidence,
                 if f == frame_idx:
                     detections.append(d)
         
-        
-        # detections = create_detections(
-        #    seq_info["detections"], frame_idx, min_detection_height)
         detections = [d for d in detections if d.confidence >= min_confidence]
 
         # Run non-maxima suppression.
@@ -188,7 +185,6 @@ def run(sequence_dir, detection_file, output_file, min_confidence,
             boxes, nms_max_overlap, scores)
         detections = [detections[i] for i in indices]
         
-        #print(detections[0].feature)
         # Update tracker.
         tracker.predict()
         tracker.update(detections)

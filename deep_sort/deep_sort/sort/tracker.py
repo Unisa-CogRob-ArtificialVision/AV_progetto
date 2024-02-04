@@ -67,11 +67,11 @@ class Tracker:
         """
         # Run matching cascade.
         matches, unmatched_tracks, unmatched_detections = \
-            self._match(detections)                                                     #############
+            self._match(detections)                                                     
 
         # Update track set.
         for track_idx, detection_idx in matches:
-            self.tracks[track_idx].update(                                              #############
+            self.tracks[track_idx].update(                                              
                 self.kf, detections[detection_idx])     # update using kalman filter
         for track_idx in unmatched_tracks:
             self.tracks[track_idx].mark_missed()
@@ -87,8 +87,8 @@ class Tracker:
                 continue
             features += track.features
             targets += [track.track_id for _ in track.features]
-            track.features = []                                                         ############# DA CONTROLLARE
-        self.metric.partial_fit(                                                        #############
+            track.features = []                                                         
+        self.metric.partial_fit(                                                        
             np.asarray(features), np.asarray(targets), active_targets)
 
     def _match(self, detections):
@@ -108,29 +108,17 @@ class Tracker:
             i for i, t in enumerate(self.tracks) if t.is_confirmed()]
         unconfirmed_tracks = [
             i for i, t in enumerate(self.tracks) if not t.is_confirmed()]
-        
-        # for t in self.tracks:
-        #     if t.track_id == 17:
-        #         print('yes')
-
-        # for i in unconfirmed_tracks:
-        #     if self.tracks[i].is_tentative:
-        #         self.tracks[i].features = []
                 
         # Associate confirmed tracks using appearance features. 
         matches_a, unmatched_tracks_a, unmatched_detections = \
             linear_assignment.matching_cascade(
                 gated_metric, self.metric.matching_threshold, self.max_age,
                 self.tracks, detections, confirmed_tracks)
-        
-        # for t in self.tracks:
-        #     if t.track_id == 17:
-        #         print('yes')
 
         # Associate remaining tracks together with unconfirmed tracks using IOU.
         iou_track_candidates =  [
             k for k in unmatched_tracks_a if
-            self.tracks[k].time_since_update == 1] + unconfirmed_tracks           # time_since_update == numero di frame dall'ultima volta che la traccia è stat a aggiornata. (Teoricamente se questo numero è maggiore di max_age la traccia deve essere eliminata)
+            self.tracks[k].time_since_update == 1] + unconfirmed_tracks           # time_since_update == numero di frame dall'ultima volta che la traccia è stata aggiornata. (Teoricamente se questo numero è maggiore di max_age la traccia deve essere eliminata)
         unmatched_tracks_a = [
             k for k in unmatched_tracks_a if
             self.tracks[k].time_since_update != 1]
