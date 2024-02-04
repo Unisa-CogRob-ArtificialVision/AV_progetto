@@ -1,9 +1,6 @@
 import torch
-import time
-from torch.utils.data import DataLoader
-from torchvision import transforms
-from .par_train_custom import SimpleModel, CustomDataset
-from tqdm import tqdm
+from .par_train_custom import SimpleModel
+
 
 
 class PARModel():
