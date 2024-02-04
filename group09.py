@@ -318,6 +318,8 @@ while img is not None:
         for id in additional_info.keys():
             if id not in updated_id:
                 additional_info[id]['current_roi'] = None
+                additional_info[id]['last_seen'] = 'outside_roi'
+                
         ## insert general info upper left
         cv2.rectangle(final_img, (0,1), (252,100), (255, 255, 255), thickness=-1)
         for i,k in enumerate(gui_upper_left.keys()):
