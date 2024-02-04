@@ -1,11 +1,8 @@
-<p>MODIFICHE DA EFFETTUARE</p>
-<p> - INSERIRE NELLA CARTELLA "DETECTOR_models" I MODELLI YOLO (yolox_s.pth o yolov8_s.pt ecc) </p>
-<p> - ORA I MODELLI PER IL PAR SONO NELLA CARTELLA "PAR_models"!! </p>
+Eseguire: group09.py --video "path_to_video.mp4" --configuration "path_to_config.txt" --results "path_to_results.txt"
 
-<p></p>
-<p></p>
-<p></p>
+- Deepsort_yolov8.py contiene la classe del tracker che utilizza come algoritmo DeepSort. E' la classe attualmente usata.
+- yolov8_tracker.py è un'implementazione del tracker utilizzando come algoritmo di tracking botsort. Non è utilizzata al momento (è stata una prova).
+- DETECTOR_MODELS contiene il modello che effettua la detection
+- PAR contiene tutto ciò che riguarda il PAR, cioè i modelli per le reti single task e il codice per il training
+- evaluate_motchallenge.py crea il file di tracking valutando il tracker sul dataset MOT16 (dati di train) (usa deeprsort_app.py)
 
-<p>Models for pedestrian attribute recognition and tracking must be downloaded to execute.</p>
-<p>Download them from: <link>https://drive.google.com/file/d/1xbC8ND_6nKxrccPnowo1pfoQOd2DUy5p/view?usp=sharing<link/></p>
-<p>Unzip and place the content of the folder (not the entire folder, just the content) in the main project folder.</p>

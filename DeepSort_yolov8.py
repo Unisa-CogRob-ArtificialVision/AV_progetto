@@ -23,12 +23,13 @@ class Tracker():
                             nn_budget=cfg.DEEPSORT.NN_BUDGET,
                             use_cuda=gpu, shape=shape)
         self.filter_class = filter_class
+        self.device = ('cuda:0' if gpu else 'cpu')
 
     def update(self, image):
         bbox = []
         scores = []
         # detect and track only the people (class 0 in COCO dataset)
-        results = self.detector(source=image,classes=0, show_labels=False,show_conf=False, show_boxes=False)
+        results = self.detector(source=image,classes=0, show_labels=False,show_conf=False, show_boxes=False, device='cuda:0')
         try:
             boxes = results[0].boxes.xywh
             for i,box in enumerate(boxes):
@@ -39,7 +40,7 @@ class Tracker():
                 bbox.append([x1,y1,w,h])
             bbox_xywh = torch.Tensor(bbox)
             outputs = self.deepsort.update(bbox_xywh, scores, image)    # update tracker state
-            
+
         except Exception:   # empty results
             bbox = []
             outputs = []
