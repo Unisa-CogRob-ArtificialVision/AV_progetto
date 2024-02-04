@@ -56,6 +56,7 @@ class Tracker():
                             shape=shape)
         
         self.filter_class = filter_class
+        self.device = ('cuda:0' if gpu else 'cpu')
 
     def update(self, image):
 
@@ -73,9 +74,8 @@ class Tracker():
 
         bbox = []
         scores = []
-
-        # RILEVA E TRACCIA SOLO LE PERSONE (CLASSE 0 NEL DATASET COCO)
-        results = self.detector(source=image,classes=0, show_labels=False,show_conf=False, show_boxes=False)
+        # detect and track only the people (class 0 in COCO dataset)
+        results = self.detector(source=image,classes=0, show_labels=False,show_conf=False, show_boxes=False, device= self.device)
         try:
             boxes = results[0].boxes.xywh
             for i,box in enumerate(boxes):
@@ -85,11 +85,9 @@ class Tracker():
                 scores.append(results[0].boxes.conf[i])
                 bbox.append([x1,y1,w,h])
             bbox_xywh = torch.Tensor(bbox)
+            outputs = self.deepsort.update(bbox_xywh, scores, image)    # update tracker state
 
-            # AGGIORNA LO STATO DEL TRACKER
-            outputs = self.deepsort.update(bbox_xywh, scores, image)    
-            
-        except Exception:   
+        except Exception:   # empty results
             bbox = []
             outputs = []
 

@@ -179,7 +179,7 @@ def parse_par_pred(preds, color_labels, gender_labels, binary_labels):
 
 # CREAZIONE DI UN OGGETTO ARGUMENTPARSER CHIAMATO PARSER PER GESTIRE GLI ARGOMENTI DA RIGA DI COMANDO
 parser = argparse.ArgumentParser()
-parser.add_argument("--video",default="test.mp4", type=str)
+parser.add_argument("--video",default="Example.mp4", type=str)
 parser.add_argument("--configuration",default="config.txt", type=str)
 parser.add_argument("--results",default="results.txt", type=str)
 parser.add_argument("--gpu", default=True, type=bool)
@@ -224,11 +224,11 @@ tracker = Tracker(gpu=GPU, shape=(processing_width,processing_height))
 
 ###################################################################### LOAD PAR MODELS ######################################################################
 
-models_path = {'uc_model':'PAR/PAR_models/best_model_uc_vgg11.pth',
-                'lc_model':'PAR/PAR_models/best_model_lc_vgg11.pth',
-                'g_model':'PAR/PAR_models/best_model_gender_vgg11.pth',
-                'b_model':'PAR/PAR_models/best_model_bag_vgg11.pth',
-                'h_model':'PAR/PAR_models/best_model_hat_vgg11.pth'}
+models_path = {'uc_model':'PAR/PAR_models/best_model_uc_alexnet_batch_mod_asym_mod_MIGLIORE.pth',
+                'lc_model':'PAR/PAR_models/best_model_lc_alexnet_batch_mod_asym_mod_v2_continue_MIGLIORE.pth',
+                'g_model':'PAR/PAR_models/best_model_g_alexnet_batch_mod_asym_mod_MIGLIORE.pth',
+                'b_model':'PAR/PAR_models/best_model_b_alexnet_batch_mod_asym_MIGLIORE.pth',
+                'h_model':'PAR/PAR_models/best_model_h_alexnet_batch_mod_asym_mod_v2_MIGLIORE.pth'}
     
 color_labels = ['black', 'blue', 'brown', 'gray', 'green', 'orange', 'pink', 'purple', 'red', 'white','yellow']
 gender_labels = ['male','female']
@@ -239,7 +239,7 @@ task_label_pairs = {'upper_color': color_labels,
                     'bag': binary_labels,
                     'hat': binary_labels}
 
-par_model = PARModel(models_path, device, backbone=['vgg11']*5)
+par_model = PARModel(models_path, device, backbone=['alexnet']*5)
 par_transforms = T.Compose([
                     T.Resize((90,220)),
                     T.ToTensor(),
